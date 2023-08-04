@@ -22,10 +22,10 @@ def get_all_pkmn():
     for pokemon in r:
         single_poke = requests.get(pokemon["url"])
         req = single_poke.json()
+        # Dex number will always be the same for same-species, regardless of variant
+        dexnum = req["pokedex_numbers"][0]["entry_number"]
 
         for variant in req["varieties"]:
-            # Dex number will always be the same for same-species, regardless of variant
-            dexnum = req["pokedex_numbers"][0]["entry_number"]
 
             # name and url changes depending on variant
             name = variant["pokemon"]["name"]
@@ -36,6 +36,6 @@ def get_all_pkmn():
             db.session.add(new_mon)
             db.session.commit()
             print(f'pokemon: {new_mon.name} id: {new_mon.id}; ADDED')
-            
+
 
 get_all_pkmn()

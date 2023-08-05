@@ -19,8 +19,9 @@ class Pokemon(db.Model):
     __tablename__ = 'pokemon'
 
     id = db.Column(db.Integer, primary_key=True)
+    species = db.Column(db.Text, nullable=False)
     species_dexnum = db.Column(db.Integer, nullable=True)
-    name = db.Column(db.String, nullable=False)
+    variant_name = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False, unique=True)
 
     def __repr__(self):
@@ -73,17 +74,31 @@ class User(db.Model):
         return f"<User {self.id}, {self.username}"
 
 
+class UserPkmn(db.Model):
+    """Details of user's individual pokemon"""
+
+    __tablename__ = "user_pokemon"
+
+    id = db.Column(db.Integer, primary_key=True)
+    species = db.Column(db.Text, db.ForeignKey('pokemon.species'))
+    variant = db.Column(db.Text, db.ForeignKey('pokemon.variant_name'))
+    nickname = db.Column(db.Text, nullable=True, default=None)
+
+
 class Party(db.Model):
-    """User's chosen pokemon"""
+    """User's Party Pokemon"""
 
     __tablename__ = 'party'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
-    pkmn_id = db.Column(db.Integer, db.ForeignKey('pokemon.id', ondelete='cascade'))
+    pkmn_id = db.Column(db.Integer, db.ForeignKey('user_pokemon.id'))
 
     def __repr__(self):
         return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.pkmn_id}>"
+    
+
+
 
 def connect_db(app):
     """Connect this database to provided Flask app."""

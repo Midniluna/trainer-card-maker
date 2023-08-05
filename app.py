@@ -46,7 +46,7 @@ def load_home():
     # all_pkmn = Pokemon.query.all()
     
     # for pokemon in all_pkmn:
-    #     form.pokemon.choices.append((pokemon.url, f"#{pokemon.dexnum} {pokemon.name}"))
+    #     form.pokemon.choices.append((pokemon.url, f"#{pokemon.dexnum} {pokemon.variant_name}"))
 
     # if form.validate_on_submit():
     #     url = form.pokemon.data

@@ -25,6 +25,8 @@ def get_all_pkmn():
         # Dex number will always be the same for same-species, regardless of variant
         dexnum = req["pokedex_numbers"][0]["entry_number"]
         species = pokemon["name"]
+        is_legendary = bool(req["is_legendary"])
+        is_mythical = bool(req["is_mythical"])
 
         for variant in req["varieties"]:
 
@@ -33,7 +35,7 @@ def get_all_pkmn():
             url = variant["pokemon"]["url"]
 
             # add pokemon to list
-            new_mon = Pokemon(species=species, species_dexnum = dexnum, variant_name = variant_name, url = url)
+            new_mon = Pokemon(species=species, species_dexnum = dexnum, variant_name = variant_name, is_legendary = is_legendary, is_mythical = is_mythical, url = url)
             db.session.add(new_mon)
             db.session.commit()
             print(f'species: {new_mon.species} variant: {new_mon.variant_name} id: {new_mon.id}; ADDED')

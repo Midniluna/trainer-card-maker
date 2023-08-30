@@ -14,7 +14,7 @@ API_BASE = "https://pokeapi.co/api/v2/"
 # db.create_all()
 
 class Pokemon(db.Model):
-    """Collection of basic info about all pokemon"""
+    """Collection of basic info about all pokemon in the known pokedex"""
 
     __tablename__ = 'pokemon'
 
@@ -22,10 +22,14 @@ class Pokemon(db.Model):
     species = db.Column(db.Text, nullable=False)
     species_dexnum = db.Column(db.Integer, nullable=True)
     variant_name = db.Column(db.String, nullable=False)
+    is_legendary = db.Column(db.Boolean, nullable=False)
+    is_mythical = db.Column(db.Boolean, nullable=False)
+    sprite = db.Column(db.String, nullable=False)
+    shiny_sprite = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False, unique=True)
 
     def __repr__(self):
-        return f"<Pokemon #{self.id}, {self.name}, dexnum: {self.species_dexnum}>"
+        return f"<Pokemon #{self.id}, {self.variant_name}, dexnum: {self.species_dexnum}>"
 
 #  ------------------------------------------
 #  ------------------------------------------
@@ -41,6 +45,10 @@ class User(db.Model):
     email = db.Column(db.Text, nullable = False, unique=True)
     password = db.Column(db.Text, nullable=False)
     bio = db.Column(db.String, nullable=True)
+    daily_catch = db.Column(db.Boolean, default = False)
+
+    # This user's pokemon
+    pokemon = db.relationship('UserPkmn', secondary='box', backref='user')
 
     @classmethod
     def signup(cls, username, email, password):
@@ -73,29 +81,49 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.id}, {self.username}"
 
+#  ------------------------------------------
+#  ------------------------------------------
 
 class UserPkmn(db.Model):
-    """Details of user's individual pokemon"""
+    """Each pokemon belonging to a user"""
 
-    __tablename__ = "user_pokemon"
+    __tablename__ = "users_pokemon"
 
     id = db.Column(db.Integer, primary_key=True)
-    species = db.Column(db.Text, db.ForeignKey('pokemon.species'))
-    variant = db.Column(db.Text, db.ForeignKey('pokemon.variant_name'))
+    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
     nickname = db.Column(db.Text, nullable=True, default=None)
+    is_shiny = db.Column(db.Boolean, nullable = False, default = False)
+    sprite = db.Column(db.Text, default = None)
 
+#  ------------------------------------------
+#  ------------------------------------------
 
-class Party(db.Model):
-    """User's Party Pokemon"""
+class Box(db.Model):
+    
+    """Many-to-many table connecting User data, Pokemon data, and each UserPkmn's data"""
 
-    __tablename__ = 'party'
+    __tablename__ = "box"
+    
+    # Who owns the pokemon?
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
+    # What's special about this user's pokemon? Nickname? Shiny?
+    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='cascade'), primary_key=True)
+    # What is the pokemon? Species? Variant? Legendary?
+    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'), primary_key=True)
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
-    pkmn_id = db.Column(db.Integer, db.ForeignKey('user_pokemon.id'))
+#  ------------------------------------------
+#  ------------------------------------------
+
+class Card(db.Model):
+    """Trainer card / User's Party Pokemon ; User and their 6 chosen display pokemon"""
+
+    __tablename__ = 'card'
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
+    user_pkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='cascade'), primary_key=True)
 
     def __repr__(self):
-        return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.pkmn_id}>"
+        return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.user_pkmn_id}>"
     
 
 

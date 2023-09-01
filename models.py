@@ -20,12 +20,13 @@ class Pokemon(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     species = db.Column(db.Text, nullable=False)
+    # National dex number of that species, regardless of regional variance
     species_dexnum = db.Column(db.Integer, nullable=True)
     variant_name = db.Column(db.String, nullable=False)
     is_legendary = db.Column(db.Boolean, nullable=False)
     is_mythical = db.Column(db.Boolean, nullable=False)
     sprite = db.Column(db.String, nullable=False)
-    shiny_sprite = db.Column(db.String, nullable=False)
+    shiny_sprite = db.Column(db.String)
     url = db.Column(db.String, nullable=False, unique=True)
 
     def __repr__(self):

@@ -34,11 +34,32 @@ def get_all_pkmn():
             variant_name = variant["pokemon"]["name"]
             url = variant["pokemon"]["url"]
 
-            # add pokemon to list
-            new_mon = Pokemon(species=species, species_dexnum = dexnum, variant_name = variant_name, is_legendary = is_legendary, is_mythical = is_mythical, url = url)
-            db.session.add(new_mon)
-            db.session.commit()
-            print(f'species: {new_mon.species} variant: {new_mon.variant_name} id: {new_mon.id}; ADDED')
+            ###### I just realized I need to do ANOTHER API call to get the sprite. This seed is going to take a hot minute but at least it'll make the app faster in the long run :sob emoji: ######
+            get_sprite = requests.get(url)
+            sprite_req = get_sprite.json()
+
+            sprite = sprite_req["sprites"]["front_default"]
+
+            if not sprite:
+                # If there's no default sprite, there won't be a shiny sprite, no need to check for both
+                print("""
+                    -----------------------
+                      NO SPRITES AVAILABLE
+                      SKIP POKEMON
+                    -----------------------""")
+            else:
+                # add pokemon to list
+
+                shiny_sprite = sprite_req["sprites"]["front_shiny"]
+                # If there's a shiny sprite, include it, else None
+                if not shiny_sprite:
+                    shiny_sprite = None
+
+                new_mon = Pokemon(species=species, species_dexnum = dexnum,     variant_name = variant_name, is_legendary = is_legendary,   is_mythical = is_mythical, sprite = sprite, shiny_sprite =    shiny_sprite, url = url)
+                db.session.add(new_mon)
+                db.session.commit()
+                print(f'species: {new_mon.species} variant: {new_mon.variant_name}  id: {new_mon.id}; ADDED')
+                print(f"Sprites: {sprite} ------------ {shiny_sprite}")
 
 
 get_all_pkmn()

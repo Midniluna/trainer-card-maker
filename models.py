@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+import random
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -52,12 +53,13 @@ class User(db.Model):
     pokemon = db.relationship('UserPkmn', secondary='box', backref='user')
 
     @classmethod
-    def signup(cls, username, email, password):
+    def signup(cls, nickname, username, email, password):
         """Sign up user. Hashes password and returns user object"""
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
+            nickname=nickname,
             username=username,
             email=email,
             password=hashed_pwd
@@ -78,6 +80,12 @@ class User(db.Model):
                 return user
             
         return False
+    
+    @classmethod
+    def catch_pokemon(cls, trainer, pokemon):
+        """Catch pokemon and give the user/trainer ownership of it"""
+
+    
 
     def __repr__(self):
         return f"<User {self.id}, {self.username}"
@@ -95,6 +103,18 @@ class UserPkmn(db.Model):
     nickname = db.Column(db.Text, nullable=True, default=None)
     is_shiny = db.Column(db.Boolean, nullable = False, default = False)
     sprite = db.Column(db.Text, default = None)
+
+    @classmethod
+    def check_shiny():
+        """Check the odds to see if generated pokemon is shiny"""
+        # shiny odds are typically 1 in 500 not one in 50, but for the sake of a small app that will not have many users or traffic, I'm increasing the odds to 1 in 50. Also, I could have used "if luckynum == 1" but 25 feels like a luckier number
+
+        luckynum = random.randint(0,50)
+
+        if luckynum == 25:
+            return True
+        return False
+
 
 #  ------------------------------------------
 #  ------------------------------------------

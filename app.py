@@ -19,9 +19,9 @@ app = Flask(__name__)
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    # os.environ.get('DATABASE_URL', 'postgresql:///pokepals'))
+    os.environ.get('DATABASE_URL', 'postgresql:///pokepals'))
     ### comment top part and uncomment bottom part, save, and run seed file again to seed the pokepals_test database
-    os.environ.get('DATABASE_URL', 'postgresql:///pokepals_test'))
+    # os.environ.get('DATABASE_URL', 'postgresql:///pokepals_test'))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -32,7 +32,7 @@ toolbar = DebugToolbarExtension(app)
 connect_db(app)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def load_home():
     """Example starter page"""
 

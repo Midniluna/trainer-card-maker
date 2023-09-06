@@ -37,10 +37,10 @@ class PokemonModelsTestCase(TestCase):
         super().tearDownClass()
 
         # Remove all tables (except pokemon table, which took a long time to seed) from the database and close the application context
-        User.__table__.drop()
-        UserPkmn.__table__.drop()
-        Box.__table__.drop()
-        Card.__table__.drop()
+        Box.__table__.drop(db.engine)
+        Card.__table__.drop(db.engine)
+        UserPkmn.__table__.drop(db.engine)
+        User.__table__.drop(db.engine)
         cls.app_context.pop()
 
     def setUp(self):
@@ -63,7 +63,11 @@ class PokemonModelsTestCase(TestCase):
     def tearDown(self):
         db.session.rollback()
 
-    # def test_catch_pokemon(self):
+    def test_catch_pokemon(self):
+        """Test catching pokemon User method"""
+        
+        self.assertFalse(self.user.daily_catch)
+        
         
         
         # to be continued

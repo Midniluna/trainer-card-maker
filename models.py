@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from IPython import embed
 import random
 
 bcrypt = Bcrypt()
@@ -32,6 +33,21 @@ class Pokemon(db.Model):
 
     def __repr__(self):
         return f"<Pokemon #{self.id}, {self.variant_name}, dexnum: {self.species_dexnum}>"
+    
+    @classmethod
+    def filter_common(cls):
+        common_mon = cls.query.filter(cls.is_legendary == False, cls.is_mythical == False).all()
+        return common_mon
+    
+    @classmethod
+    def filter_legends(cls):
+        all_legends = cls.query.filter(cls.is_legendary == True).all()
+        return all_legends
+    
+    @classmethod
+    def filter_mythicals(cls):
+        all_myths = cls.query.filter(cls.is_mythical == True).all()
+        return all_myths
 
 #  ------------------------------------------
 #  ------------------------------------------
@@ -50,7 +66,8 @@ class User(db.Model):
     daily_catch = db.Column(db.Boolean, default = False)
 
     # This user's pokemon
-    pokemon = db.relationship('UserPkmn', secondary='box', backref='user')
+    pokemon = db.relationship("UserPkmn", secondary="box", backref='user', cascade="all, delete")
+    card = db.relationship("Card", cascade="all, delete")
 
     @classmethod
     def signup(cls, nickname, username, email, password):
@@ -81,10 +98,19 @@ class User(db.Model):
             
         return False
     
-    @classmethod
-    def catch_pokemon(cls, trainer, pokemon):
+    def catch_pokemon(user, genned, input):
         """Catch pokemon and give the user/trainer ownership of it"""
+        
+        # if the pokemon species name matches the user's input, add it to the database with the user as the owner.
+        if input == genned.species:
+            db.session.add(genned)
+            db.session.commit()
 
+            new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
+            db.session.add(new_boxed)
+            db.session.commit()
+        else:
+            return False
     
 
     def __repr__(self):
@@ -94,18 +120,32 @@ class User(db.Model):
 #  ------------------------------------------
 
 class UserPkmn(db.Model):
-    """Each pokemon belonging to a user"""
+    """Each generated pokemon"""
 
     __tablename__ = "users_pokemon"
 
     id = db.Column(db.Integer, primary_key=True)
-    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
     nickname = db.Column(db.Text, nullable=True, default=None)
-    is_shiny = db.Column(db.Boolean, nullable = False, default = False)
-    sprite = db.Column(db.Text, default = None)
+    is_shiny = db.Column(db.Boolean, nullable = False)
+    sprite = db.Column(db.Text)
+
+    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
 
     @classmethod
-    def check_shiny():
+    def check_rarity(cls):
+        """Check the odds to see if pokemon is common, legendary, or mythic"""
+
+        luckynum = random.randint(0,300)
+
+        if luckynum <= 10:
+            return "mythic"
+        elif luckynum <= 40:
+            return "legendary"
+        else: 
+            return "common"
+
+    @classmethod
+    def check_shiny(cls):
         """Check the odds to see if generated pokemon is shiny"""
         # shiny odds are typically 1 in 500 not one in 50, but for the sake of a small app that will not have many users or traffic, I'm increasing the odds to 1 in 50. Also, I could have used "if luckynum == 1" but 25 feels like a luckier number
 
@@ -114,6 +154,52 @@ class UserPkmn(db.Model):
         if luckynum == 25:
             return True
         return False
+    
+    
+    def gen_pokemon():
+        """Generate a new pokemon"""
+
+        rarity = UserPkmn.check_rarity()
+        print(f"Rarity: {rarity}")
+
+        # filter potential genned mons by decided rarity
+        if rarity == "mythic":
+            list_mons = Pokemon.filter_mythicals()
+        elif rarity == "legendary":
+            list_mons = Pokemon.filter_legends()
+        else:
+            list_mons = Pokemon.filter_common()
+
+
+        total_mon = len(list_mons) - 1
+        random_index = random.randint(0, total_mon)
+        pokemon = list_mons[random_index]
+
+        print(f"What pokemon: {pokemon.variant_name}")
+
+        sprite = None
+        is_shiny = UserPkmn.check_shiny()
+        
+        # If the pokemon has a shiny sprite AND check_shiny comes out true, sprite is shiny, else return false
+        print(f"Does shiny sprite exist? : {bool(pokemon.shiny_sprite)}")
+        # ^ show whether or not there's a shiny sprite
+        # print(is_shiny) 
+        # ^ show results of shiny odds check
+
+        if pokemon.shiny_sprite is not None and is_shiny:
+            sprite = pokemon.shiny_sprite
+            print("Shiny!")
+        else: 
+            sprite = pokemon.sprite
+            print("Not shiny")
+        print(f"Sprite: {sprite}")
+
+        genned = UserPkmn(is_shiny = is_shiny, sprite = sprite, pokemon_id = pokemon.id)
+        # Do NOT commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
+
+        return genned
+
+        
 
 
 #  ------------------------------------------
@@ -129,8 +215,9 @@ class Box(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
     # What's special about this user's pokemon? Nickname? Shiny?
     userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='cascade'), primary_key=True)
-    # What is the pokemon? Species? Variant? Legendary?
-    pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'), primary_key=True)
+
+    def __repr__(self):
+        return f"User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}"
 
 #  ------------------------------------------
 #  ------------------------------------------
@@ -141,10 +228,10 @@ class Card(db.Model):
     __tablename__ = 'card'
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
-    user_pkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='cascade'), primary_key=True)
+    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id'), primary_key=True)
 
     def __repr__(self):
-        return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.user_pkmn_id}>"
+        return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.userpkmn_id}>"
     
 
 

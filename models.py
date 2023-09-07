@@ -1,6 +1,7 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from IPython import embed
+import datetime
 import random
 
 bcrypt = Bcrypt()
@@ -23,7 +24,7 @@ class Pokemon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     species = db.Column(db.Text, nullable=False)
     # National dex number of that species, regardless of regional variance
-    species_dexnum = db.Column(db.Integer, nullable=True)
+    species_dexnum = db.Column(db.String, nullable=True)
     variant_name = db.Column(db.String, nullable=False)
     is_legendary = db.Column(db.Boolean, nullable=False)
     is_mythical = db.Column(db.Boolean, nullable=False)
@@ -49,6 +50,8 @@ class Pokemon(db.Model):
         all_myths = cls.query.filter(cls.is_mythical == True).all()
         return all_myths
 
+
+
 #  ------------------------------------------
 #  ------------------------------------------
 
@@ -63,11 +66,11 @@ class User(db.Model):
     email = db.Column(db.Text, nullable = False, unique=True)
     password = db.Column(db.Text, nullable=False)
     bio = db.Column(db.String, nullable=True)
-    daily_catch = db.Column(db.Boolean, default = False)
+    last_catch = db.Column(db.Text, default = None)
 
     # This user's pokemon
     pokemon = db.relationship("UserPkmn", secondary="box", backref='user', cascade="all, delete")
-    card = db.relationship("Card", cascade="all, delete")
+    card = db.relationship("Card", backref='user', cascade="all, delete")
 
     @classmethod
     def signup(cls, nickname, username, email, password):
@@ -98,29 +101,43 @@ class User(db.Model):
             
         return False
     
+    
     def catch_pokemon(user, genned, input):
-        """Catch pokemon and give the user/trainer ownership of it"""
+        """Catch pokemon and give the user/trainer ownership of it. Requires authorized user, generated pokemon, and user input guessing genned pokemon's species"""
+
+        # First check that the user has not already caught a pokemon today
+        t = datetime.datetime.today()
+        today = t.strftime('%m/%d/%Y')
+
+        if user.last_catch == today:
+            return None
         
-        # if the pokemon species name matches the user's input, add it to the database with the user as the owner.
-        if input == genned.species:
+        # if the pokemon species name matches the user's input, add it tothe   database with the user as the owner.
+        pkmn = Pokemon.query.get(genned.pokemon_id)
+
+        if input == pkmn.species:
             db.session.add(genned)
             db.session.commit()
 
             new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
             db.session.add(new_boxed)
+            user.last_catch = today
             db.session.commit()
+            return "Success"
         else:
-            return False
+            return "Failed"
     
 
     def __repr__(self):
-        return f"<User {self.id}, {self.username}"
+        return f"<User {self.id}, {self.username}, last catch date: {self.last_catch}"
+
+
 
 #  ------------------------------------------
 #  ------------------------------------------
 
 class UserPkmn(db.Model):
-    """Each generated pokemon"""
+    """Instance of a generated pokemon"""
 
     __tablename__ = "users_pokemon"
 
@@ -147,20 +164,20 @@ class UserPkmn(db.Model):
     @classmethod
     def check_shiny(cls):
         """Check the odds to see if generated pokemon is shiny"""
-        # shiny odds are typically 1 in 500 not one in 50, but for the sake of a small app that will not have many users or traffic, I'm increasing the odds to 1 in 50. Also, I could have used "if luckynum == 1" but 25 feels like a luckier number
+        # shiny odds are typically 1 in 500 not one in 50, but for the sake of a small app that will not have many users or traffic, I'm increasing the odds to 1 in 50 (2 out of 100)
 
-        luckynum = random.randint(0,50)
+        luckynum = random.randint(1,100)
 
-        if luckynum == 25:
+        if luckynum <= 2:
             return True
         return False
     
-    
-    def gen_pokemon():
+
+    # optional inputs for testing only
+    def gen_pokemon(shine = None):
         """Generate a new pokemon"""
 
         rarity = UserPkmn.check_rarity()
-        print(f"Rarity: {rarity}")
 
         # filter potential genned mons by decided rarity
         if rarity == "mythic":
@@ -175,25 +192,35 @@ class UserPkmn(db.Model):
         random_index = random.randint(0, total_mon)
         pokemon = list_mons[random_index]
 
-        print(f"What pokemon: {pokemon.variant_name}")
 
         sprite = None
         is_shiny = UserPkmn.check_shiny()
-        
-        # If the pokemon has a shiny sprite AND check_shiny comes out true, sprite is shiny, else return false
-        print(f"Does shiny sprite exist? : {bool(pokemon.shiny_sprite)}")
+
+        # print(f"Does shiny sprite exist? : {bool(pokemon.shiny_sprite)}")
         # ^ show whether or not there's a shiny sprite
-        # print(is_shiny) 
-        # ^ show results of shiny odds check
+
+            ###################### UNCOMMENT THIS SECTION FOR TESTING ######################
+
+        # if "shine" input is true/exists, guarantee genned pokemon is shiny unless there is no shiny sprite. This section is solely for testing purposes
+
+        # if shine:
+        #     if pokemon.shiny_sprite is not None:
+        #         sprite = pokemon.shiny_sprite
+        #         return UserPkmn(is_shiny = True, sprite = sprite, pokemon_id = pokemon.id)
+        #     else:
+        #         sprite = pokemon.sprite
+        #         return UserPkmn(is_shiny = False, sprite = sprite, pokemon_id = pokemon.id)
+
+            #####################################################################################
+            
 
         if pokemon.shiny_sprite is not None and is_shiny:
             sprite = pokemon.shiny_sprite
-            print("Shiny!")
+            # print("Shiny!")
         else: 
             sprite = pokemon.sprite
-            print("Not shiny")
-        print(f"Sprite: {sprite}")
-
+            # print("Not shiny")
+        
         genned = UserPkmn(is_shiny = is_shiny, sprite = sprite, pokemon_id = pokemon.id)
         # Do NOT commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
 
@@ -207,7 +234,7 @@ class UserPkmn(db.Model):
 
 class Box(db.Model):
     
-    """Many-to-many table connecting User data, Pokemon data, and each UserPkmn's data"""
+    """Table connecting User data, Pokemon data, and each UserPkmn's data"""
 
     __tablename__ = "box"
     
@@ -218,6 +245,8 @@ class Box(db.Model):
 
     def __repr__(self):
         return f"User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}"
+
+
 
 #  ------------------------------------------
 #  ------------------------------------------

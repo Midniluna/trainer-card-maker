@@ -24,6 +24,15 @@ def get_all_pkmn():
         req = single_poke.json()
         # Dex number will always be the same for same-species, regardless of variant
         dexnum = req["pokedex_numbers"][0]["entry_number"]
+        
+        # Kind of a pain to do now, but makes the dex formatting better in the database. dexnum will always be 4 digits long. ex: 0004, 0118, 1002 instead of 4, 118, 1002. I'd like it to be like #0118, but I want to be able to convert it to and from an integer (sans-preceding 0s) so I'll just add it directly later when needed.
+        if int(dexnum) < 10:
+            dexnum = (f"000{dexnum}")
+        elif int(dexnum) < 100:
+            dexnum = (f"00{dexnum}")
+        elif int(dexnum) < 1000:
+            dexnum = (f"0{dexnum}")
+
         species = pokemon["name"]
         is_legendary = bool(req["is_legendary"])
         is_mythical = bool(req["is_mythical"])

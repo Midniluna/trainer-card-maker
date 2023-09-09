@@ -21,7 +21,7 @@ app.config['TESTING'] = True
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
 # Now tests go here
-# python3 -m unittest tests_models.py
+# python3 -m unittest test_models.py
 
 
 class UserModelsTestCase(TestCase):
@@ -108,6 +108,44 @@ class UserModelsTestCase(TestCase):
         validated = User.authenticate(user.username, password)
         self.assertIsInstance(validated, User)
 
+
+    def test_delete_user(self):
+        """Confirm relationships and foreignkeys are properly implimented + delete associated data accordingly upon user deletion"""
+
+        user = User.signup(nickname = "Nikki", username = "NikiminajDaBest", email="MaterialGorl@email.com", password = "passtheword")
+        genned = UserPkmn.gen_pokemon()
+        db.session.add(genned)
+        db.session.commit()
+
+        # Confirm user + pokemon is added to database by checking if id was added
+        self.assertIsNotNone(user.id)
+        self.assertIsNotNone(genned.id)
+
+        # Set up data in tables with foreignkeys to make sure they are collapsed upon user deletion
+        commit2box = Box(user_id = user.id, userpkmn_id = genned.id)
+        db.session.add(commit2box)
+        db.session.commit()
+
+        # embed()
+
+        # if it exists, will return true. 
+        boxed = Box.query.filter_by(user_id = user.id, userpkmn_id = genned.id).first()
+        self.assertTrue(boxed)
+
+        db.session.delete(user)
+        db.session.delete(boxed)
+        db.session.commit()
+
+        # Empty lists return false. confirm user and box no longer exists
+        self.assertFalse(User.query.all())
+        self.assertFalse(Box.query.all())
+        # pokemon should now no longer exist either since box and user were deleted. 
+        self.assertFalse(UserPkmn.query.all())
+
+
+
+
+
     print("User model tests passed")
 
 
@@ -173,6 +211,7 @@ class UserPkmnModelsTestCase(TestCase):
             # Try generating a guaranteed shiny. stating variable first for readability
             shiny = True
             genned2 = UserPkmn.gen_pokemon(shiny)
+
             # get base pokemon data of genned pokemon
             base = Pokemon.query.get(genned2.pokemon_id)
 

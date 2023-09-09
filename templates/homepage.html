@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Welcome to the Pokepals homepage!</h1>
+{% if not g.user %}
+<h3>Please login or create an account</h2>
+<br>
+<h1>OR</h1>
+<br>
+<h3>Create your Trainer Card</h3>
+<br>
+<a href="#" class="btn btn-lg btn-primary">START</a>
+{% else %}
+<h3>Welcome back, {{g.user.nickname}}</h3>
+{% endif %}
+
+{% endblock %}

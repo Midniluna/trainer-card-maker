@@ -58,7 +58,7 @@ class Pokemon(db.Model):
 class User(db.Model):
     """User in the system"""
 
-    __tablename__ = 'users'
+    __tablename__ = 'user'
 
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.Text, nullable=False)
@@ -69,8 +69,8 @@ class User(db.Model):
     last_catch = db.Column(db.Text, default = None)
 
     # This user's pokemon
-    pokemon = db.relationship("UserPkmn", secondary="box", backref='user', cascade="all, delete")
-    card = db.relationship("Card", backref='user', cascade="all, delete")
+    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="user", cascade="all, delete")
+    card = db.relationship("Card", back_populates="user", cascade="all, delete")
 
     @classmethod
     def signup(cls, nickname, username, email, password):
@@ -145,8 +145,11 @@ class UserPkmn(db.Model):
     nickname = db.Column(db.Text, nullable=True, default=None)
     is_shiny = db.Column(db.Boolean, nullable = False)
     sprite = db.Column(db.Text)
-
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
+
+
+    user = db.relationship("User", secondary='box', passive_deletes=True)
+    pokemon = db.relationship('Pokemon')
 
     @classmethod
     def check_rarity(cls):
@@ -154,9 +157,9 @@ class UserPkmn(db.Model):
 
         luckynum = random.randint(0,300)
 
-        if luckynum <= 10:
+        if luckynum <= 5:
             return "mythic"
-        elif luckynum <= 40:
+        elif luckynum <= 20:
             return "legendary"
         else: 
             return "common"
@@ -203,13 +206,13 @@ class UserPkmn(db.Model):
 
         # if "shine" input is true/exists, guarantee genned pokemon is shiny unless there is no shiny sprite. This section is solely for testing purposes
 
-        # if shine:
-        #     if pokemon.shiny_sprite is not None:
-        #         sprite = pokemon.shiny_sprite
-        #         return UserPkmn(is_shiny = True, sprite = sprite, pokemon_id = pokemon.id)
-        #     else:
-        #         sprite = pokemon.sprite
-        #         return UserPkmn(is_shiny = False, sprite = sprite, pokemon_id = pokemon.id)
+        if shine:
+            if pokemon.shiny_sprite is not None:
+                sprite = pokemon.shiny_sprite
+                return UserPkmn(is_shiny = True, sprite = sprite, pokemon_id = pokemon.id)
+            else:
+                sprite = pokemon.sprite
+                return UserPkmn(is_shiny = False, sprite = sprite, pokemon_id = pokemon.id)
 
             #####################################################################################
             
@@ -222,7 +225,8 @@ class UserPkmn(db.Model):
             # print("Not shiny")
         
         genned = UserPkmn(is_shiny = is_shiny, sprite = sprite, pokemon_id = pokemon.id)
-        # Do NOT commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
+        print(f"Pokemon: {pokemon}. Shiny? {is_shiny}. Sprite: {sprite}")
+        # Do NOT add to session or commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
 
         return genned
 
@@ -239,12 +243,12 @@ class Box(db.Model):
     __tablename__ = "box"
     
     # Who owns the pokemon?
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), primary_key = True)
     # What's special about this user's pokemon? Nickname? Shiny?
-    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='cascade'), primary_key=True)
+    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete="CASCADE"), primary_key=True)
 
     def __repr__(self):
-        return f"User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}"
+        return f"<User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}>"
 
 
 
@@ -256,8 +260,10 @@ class Card(db.Model):
 
     __tablename__ = 'card'
     
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='cascade'), primary_key=True)
     userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id'), primary_key=True)
+
+    user = db.relationship("User")
 
     def __repr__(self):
         return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.userpkmn_id}>"

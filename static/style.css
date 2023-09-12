@@ -1,3 +1,11 @@
 .main-content {
 	padding: 15px;
 }
+
+.home-pika {
+	max-width: 300px;
+}
+
+#flDebug #flDebugToolbarHandle {
+	top: 60px !important;
+}

@@ -1,22 +1,26 @@
 import os
-import requests
-import collections
+# import requests
+# import collections
 
 from flask import Flask, render_template, flash, redirect, request, session, g, url_for
-from flask_debugtoolbar import DebugToolbarExtension
-# from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
+from flask_debugtoolbar import DebugToolbarExtension
+
 from IPython import embed
 
 # from forms import 
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card
-from forms import PokemonSelectForm
+from forms import SignupForm
 
 CURR_USER_KEY = "curr_user"
 API_BASE = "https://pokeapi.co/api/v2/"
 
 app = Flask(__name__)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -27,13 +31,28 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "rah rah rah")
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put here honestly")
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id) or None
+
+@app.before_request
+def add_user_to_g():
+    """If we're logged in, add curr user to Flask global."""
+
+    if CURR_USER_KEY in session:
+        g.user = User.query.get(session[CURR_USER_KEY])
+    else:
+        g.user = None
+
+
 @app.route('/')
-def base():
+def direct_home():
     return redirect(url_for('homepage'))
 
 @app.route('/home')
@@ -42,12 +61,41 @@ def homepage():
 
     return render_template('homepage.html')
 
-@app.route('/signup')
+
+@app.route('/signup', methods=["GET", "POST"])
 def signup():
     if g.user:
         return
     else:
-        print("hehe")
+
+        form = SignupForm()
+
+        if form.validate_on_submit():
+            try:
+                user = User.signup(
+                    username=form.username.data,
+                    nickname=form.nickname.data,
+                    password=form.password.data,
+                    email = form.email.data
+                )
+                db.session.commit()
+            except IntegrityError:
+                flash("Username is already taken", 'danger')
+                return render_template('users/signup.html ')
+            
+            session[CURR_USER_KEY] = user.id
+
+            return redirect('/')
+        
+        else:
+            return render_template('users/signup.html', form = form)
+
+@app.route('/login')
+def login():
+    if g.user:
+        return
+    else:
+        print("Login page")
 
 @app.route('/generate')
 def gen_pokemon():

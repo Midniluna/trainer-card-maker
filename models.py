@@ -73,7 +73,7 @@ class User(db.Model):
     card = db.relationship("Card", back_populates="user", cascade="all, delete")
 
     @classmethod
-    def signup(cls, nickname, username, email, password):
+    def signup(cls, username, nickname, password, email):
         """Sign up user. Hashes password and returns user object"""
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')

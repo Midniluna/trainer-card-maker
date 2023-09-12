@@ -64,19 +64,19 @@ def homepage():
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
-    if g.user:
-        return
-    else:
+    """Sign up new user and add to database"""
 
+    # If no user signed in, run the rest of the code. Else, return
+    if not g.user:
         form = SignupForm()
 
-        if form.validate_on_submit():
+        if form.validate_on_submit(self, extra_validators=None):
             try:
                 user = User.signup(
                     username=form.username.data,
                     nickname=form.nickname.data,
-                    password=form.password.data,
-                    email = form.email.data
+                    email = form.email.data,
+                    password=form.password.data
                 )
                 db.session.commit()
             except IntegrityError:
@@ -89,6 +89,8 @@ def signup():
         
         else:
             return render_template('users/signup.html', form = form)
+        
+    return
 
 @app.route('/login')
 def login():

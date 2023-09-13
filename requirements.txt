@@ -37,7 +37,7 @@ python-dateutil==2.7.3
 requests==2.31.0
 simplegeneric==0.8.1
 six==1.11.0
-SQLAlchemy==1.2.12
+SQLAlchemy==1.4.49
 stack-data==0.6.2
 text-unidecode==1.2
 traitlets==5.9.0

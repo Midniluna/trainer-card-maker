@@ -70,7 +70,7 @@ def signup():
     if not g.user:
         form = SignupForm()
 
-        if form.validate_on_submit(self, extra_validators=None):
+        if form.validate_on_submit():
             try:
                 user = User.signup(
                     username=form.username.data,
@@ -81,7 +81,7 @@ def signup():
                 db.session.commit()
             except IntegrityError:
                 flash("Username is already taken", 'danger')
-                return render_template('users/signup.html ')
+                return render_template('users/signup.html')
             
             session[CURR_USER_KEY] = user.id
 

@@ -58,7 +58,7 @@ class Pokemon(db.Model):
 class User(db.Model):
     """User in the system"""
 
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.Text, nullable=False)
@@ -69,8 +69,8 @@ class User(db.Model):
     last_catch = db.Column(db.Text, default = None)
 
     # This user's pokemon
-    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="user", cascade="all, delete")
-    card = db.relationship("Card", back_populates="user", cascade="all, delete")
+    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete")
+    card = db.relationship("Card", back_populates="users", cascade="all, delete")
 
     @classmethod
     def signup(cls, username, nickname, password, email):
@@ -148,7 +148,7 @@ class UserPkmn(db.Model):
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
 
 
-    user = db.relationship("User", secondary='box', passive_deletes=True)
+    users = db.relationship("User", secondary='box', passive_deletes=True)
     pokemon = db.relationship('Pokemon')
 
     @classmethod
@@ -243,7 +243,7 @@ class Box(db.Model):
     __tablename__ = "box"
     
     # Who owns the pokemon?
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete="CASCADE"), primary_key = True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key = True)
     # What's special about this user's pokemon? Nickname? Shiny?
     userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete="CASCADE"), primary_key=True)
 
@@ -260,10 +260,10 @@ class Card(db.Model):
 
     __tablename__ = 'card'
     
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='cascade'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
     userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id'), primary_key=True)
 
-    user = db.relationship("User")
+    users = db.relationship("User")
 
     def __repr__(self):
         return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.userpkmn_id}>"

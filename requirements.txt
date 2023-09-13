@@ -6,7 +6,7 @@ blinker==1.6.2
 certifi==2023.7.22
 cffi==1.15.1
 charset-normalizer==3.2.0
-click==8.1.7
+click==8.1.6
 decorator==4.3.0
 executing==1.2.0
 Faker==0.9.1
@@ -15,7 +15,7 @@ Flask-Bcrypt==0.7.1
 Flask-DebugToolbar==0.13.1
 Flask-Login==0.6.2
 Flask-SQLAlchemy==2.3.2
-Flask-WTF==1.1.1
+Flask-WTF==1.0.1
 idna==3.4
 ipython==8.14.0
 ipython-genutils==0.2.0
@@ -36,7 +36,7 @@ Pygments==2.15.1
 python-dateutil==2.7.3
 requests==2.31.0
 simplegeneric==0.8.1
-six==1.11.0
+six==1.16.0
 SQLAlchemy==1.4.49
 stack-data==0.6.2
 text-unidecode==1.2

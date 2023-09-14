@@ -19,7 +19,7 @@
 			<div class="collapse navbar-collapse">
 				<ul class="navbar-nav mr-auto">
 					<li class="nav-item">
-						<a href="#" class="nav-link">Home</a>
+						<a href="/home" class="nav-link">Home</a>
 					</li>
 					{% if not g.user %}
 					<li class="nav-item">
@@ -43,10 +43,14 @@
 				</ul>
 			</div>
 		</nav>
+		{% for message in get_flashed_messages() %}
+		<div class="alert alert-info">{{ message }}</div>
+		{% endfor %}
 
 		<!-- BODY -->
 		<main class="main-content">{% block content %}{% endblock %}</main>
 	</body>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<script src="/static/app.js"></script>
 </html>

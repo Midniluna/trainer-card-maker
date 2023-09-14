@@ -1,0 +1,60 @@
+{% extends 'base.html' %} {% block content %}
+<div
+	class="alert"
+	style="
+		margin-left: auto;
+		margin-right: auto;
+		width: fit-content;
+		display: none;
+	"
+	role="alert"
+	id="alert-guess-mon"
+></div>
+<br />
+<div
+	class="genned-mon"
+	style="text-align: center"
+	data-genned-id="{{genned.id}}"
+>
+	<img
+		src="{{genned.sprite}}"
+		alt="Generated Pokemon"
+		style="margin: auto; display: block"
+	/>
+	<h4>{{species}}</h4>
+	<hr />
+	<div
+		class="genned-mon-content"
+		style="margin-left: auto; margin-right: auto; width: fit-content"
+	>
+		<form
+			action="/catch/{{genned.id}}"
+			method="POST"
+			id="guess-pokemon-form"
+			style="text-align: center; margin-left: auto; margin-right: auto"
+		>
+			{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+			'hidden' %}
+			<p>
+				{{field.label}} {{field(class="form-control")}}
+				<small
+					>Hint: Only enter the pokemon's species name (i.e. "Pikachu",
+					"Raticate", "Wiglett"). You do not need to add region names (i.e.
+					"Alolan Raichu"), "G-max" (where applicable), or "Mega" (where
+					applicable).</small
+				>
+				{% for error in field.errors %} {{error}} {% endfor %}
+			</p>
+			{% endfor %}
+			<button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+
+		<a href="/generate" class="btn btn-lg">Reset</a>
+	</div>
+</div>
+<div
+	class="redirect"
+	style="margin-left: auto; margin-right: auto; width: fit-content"
+></div>
+
+{% endblock %}

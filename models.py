@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from flask import session
 from IPython import embed
 import datetime
 import random
@@ -15,6 +16,8 @@ API_BASE = "https://pokeapi.co/api/v2/"
 # app_context = app.app_context()
 # app_context.push()
 # db.create_all()
+
+CURR_GENNED_KEY = "curr_genned"
 
 class Pokemon(db.Model):
     """Collection of basic info about all pokemon in the known pokedex"""
@@ -67,6 +70,7 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
     bio = db.Column(db.String, nullable=True)
     last_catch = db.Column(db.Text, default = None)
+    last_genned = db.Column(db.Text, default = None)
 
     # This user's pokemon
     pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete")
@@ -101,8 +105,8 @@ class User(db.Model):
             
         return False
     
-    
-    def catch_pokemon(user, genned, input):
+    @classmethod 
+    def catch_pokemon(cls, user, genned, input):
         """Catch pokemon and give the user/trainer ownership of it. Requires authorized user, generated pokemon, and user input guessing genned pokemon's species"""
 
         # First check that the user has not already caught a pokemon today
@@ -116,9 +120,8 @@ class User(db.Model):
         pkmn = Pokemon.query.get(genned.pokemon_id)
 
         if input == pkmn.species:
-            db.session.add(genned)
-            db.session.commit()
 
+            # embed()
             new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
             db.session.add(new_boxed)
             user.last_catch = today
@@ -129,7 +132,7 @@ class User(db.Model):
     
 
     def __repr__(self):
-        return f"<User {self.id}, {self.username}, last catch date: {self.last_catch}"
+        return f"<User {self.id}, {self.username}, last catch date: {self.last_catch}>"
 
 
 
@@ -180,6 +183,10 @@ class UserPkmn(db.Model):
     def gen_pokemon(shine = None):
         """Generate a new pokemon"""
 
+        # remove last generated pokemon from the session if exists
+        if CURR_GENNED_KEY in session:
+            session.pop(CURR_GENNED_KEY)
+
         rarity = UserPkmn.check_rarity()
 
         # filter potential genned mons by decided rarity
@@ -225,6 +232,8 @@ class UserPkmn(db.Model):
             # print("Not shiny")
         
         genned = UserPkmn(is_shiny = is_shiny, sprite = sprite, pokemon_id = pokemon.id)
+        db.session.add(genned)
+        db.session.commit()
         print(f"Pokemon: {pokemon}. Shiny? {is_shiny}. Sprite: {sprite}")
         # Do NOT add to session or commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
 

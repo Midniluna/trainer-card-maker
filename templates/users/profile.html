@@ -1,0 +1,22 @@
+{% extends 'base.html' %} {% block content %}
+<div style="text-align: center">
+	<img
+		src="{{user.img_url}}"
+		alt="User profile picture"
+		class="profile-pic"
+		style="margin: auto; display: block"
+	/>
+	<hr />
+	<h1>{{(user.username).capitalize()}}'s Trainer Card</h1>
+
+	<!-- TRAINER CARD GOES HERE -->
+	{% if g.user.id != user.id %} {% include '/cards/view-card.html'%} {% else %} {% include '/cards/your-trainer-card.html'%} 
+	<a href="/{{user.id}}/card/edit" class="btn btn-success">Edit Card</a> 
+	{% endif %}
+	<hr />
+	<h2>All {{(user.username).capitalize()}}'s pokemon</h2>
+	<div class="user-pokemon-container">
+	{% include 'display-pokemon.html' %}
+	</div>
+</div>
+{% endblock %}

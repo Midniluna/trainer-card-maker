@@ -10,7 +10,7 @@ from models import db, Pokemon, User, UserPkmn, Box, Card
 
 os.environ['DATABASE_URL'] = "postgresql:///pokepals_test"
 
-from app import app
+from app import app, CURR_USER_KEY
 
 db.create_all()
 
@@ -19,9 +19,12 @@ app.config['TESTING'] = True
 
 # This is a bit of hack, but don't use Flask DebugToolbar
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
+app.config['WTF_CSRF_ENABLED'] = False
 
 # Now tests go here
 # python3 -m unittest test_models.py
+
+# MUST UNCOMMENT LINES 208 AND 209 IN MODELS.PY UNLESS YOU ADD SESSION LOGIC TO TESTS 
 
 
 class UserModelsTestCase(TestCase):

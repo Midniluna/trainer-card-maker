@@ -68,6 +68,7 @@ def do_logout():
 
 @app.route('/')
 def direct_home():
+    # embed()
     return redirect(url_for('homepage'))
 
 

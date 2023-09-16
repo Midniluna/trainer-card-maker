@@ -93,8 +93,8 @@ class User(db.Model):
     last_genned = db.Column(db.Text, default = None)
 
     # This user's pokemon
-    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete")
-    # card = db.relationship("Card", cascade="all, delete")
+    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True)
+    card = db.relationship("Card", back_populates="user" , cascade="all, delete-orphan")
 
     # slotted = db.relationship("User", secondary="card", primaryjoin=(Card.user_id))
 
@@ -283,7 +283,7 @@ class Card(db.Model):
 
     __tablename__ = 'card'
     
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE, delete-orphan"), primary_key=True)
 
     slot1_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
     slot2_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
@@ -292,7 +292,7 @@ class Card(db.Model):
     slot5_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
     slot6_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
 
-    user = db.relationship("User", backref="card", primaryjoin=(User.id == user_id))
+    user = db.relationship("User", primaryjoin=(User.id == user_id))
 
 
     def return_slotted(self):

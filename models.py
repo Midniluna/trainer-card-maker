@@ -92,7 +92,7 @@ class User(db.Model):
     last_catch = db.Column(db.Text, default = None)
     last_genned = db.Column(db.Text, default = None)
 
-    # This user's pokemon
+    # This user's pokemon. pokemon is deleted upon user deletion, but still may consider revoking that to allow for some type of pokemon-orphanage type deal where users can adopt orphaned pokemon.
     pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True)
     card = db.relationship("Card", back_populates="user" , cascade="all, delete-orphan")
 

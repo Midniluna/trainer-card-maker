@@ -2,9 +2,9 @@
 {% block content %}
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu official art" class="home-pika" style="margin: auto; display: block;">
-    {% if not g.user %}
+    <img src="static/images/pika.png" alt="Pikachu official art" class="home-pika" style="margin: auto; display: block;">
     <h1>Welcome to the Pokepals homepage!</h1>
+    {% if not g.user %}
     <h3>Please login or create an account</h2>
     <br>
     <h1>OR</h1>
@@ -13,7 +13,6 @@
     <br>
     <a href="#" class="btn btn-lg btn-primary">START</a>
     {% else %}
-    <h1>Welcome back, {{g.user.nickname}}!</h1>
     <hr>
     <h3>Generate your daily pokemon?</h3>
     <br>

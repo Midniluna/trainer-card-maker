@@ -10,6 +10,63 @@ form {
 	max-width: 300px;
 }
 
+.profile-pic {
+	height: 150px;
+	width: 150px;
+	box-shadow: 0 1px 1px rgba(136, 153, 166, 0.15);
+}
+
+.user-pokemon-container,
+.card-container {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 40px;
+	margin-bottom: 40px;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.user-pokemon-container.edit-card {
+	width: 60%;
+	min-width: 420px;
+	margin: auto;
+	margin-left: 0;
+	margin-right: 0;
+}
+
+.show-editable-pokemon{
+	width: 35%;
+	min-width: 300px;
+	height: 520px;
+	overflow-y:auto
+}
+
+.card-container {
+	/* sprites are 100 x 100px. each sprite has 20px margin. 3 sprites per row. */
+	/* 100 x 3 (each sprite for each row) + 20 x 6 (each sprite has 20 margin per side (left + right)) = 420px width total */
+	width: 420px;
+}
+
+.pokemon-container {
+	max-width: 100px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.pokemon-image {
+	width: 100px;
+	height: 100px;
+}
+
+.edit-mon {
+	font-size: 12px;
+}
+
+.in-card {
+	font-weight: bold;
+}
+
+/* I did this because the DebugToolbar was in the way of the profile tab of the navbar, very annoying */
 #flDebug #flDebugToolbarHandle {
 	top: 60px !important;
 }

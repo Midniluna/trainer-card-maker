@@ -1,0 +1,18 @@
+{% for poke in all_boxed %}
+<div class="pokemon-container">
+    {% if poke.nickname %}
+    <p style="display: block">{{poke.nickname}}</p>
+    {% endif %} 
+    <img src="{{poke.sprite}}" alt="User Pokemon" class="pokemon-image" />
+    <span style="display: block;">{{poke.pokemon.species.capitalize()}}</span>
+    <small style="font-size: 12px;"><b>ID: #{{poke.id}}</b></small>
+    {% if g.user.id == user.id %} <span style="display: block;">
+        <!-- If user is on card editing page, edit passes as true -->
+        {% if edit %}
+        <button class="btn btn-sm btn-primary"  data-userpkmn-id="{{poke.id}}">Choose</button>
+        {% else %}
+        <a href="#"   class="edit-mon">Edit</a></span>
+        {% endif %}
+    {% endif %}
+</div>
+{% endfor %}

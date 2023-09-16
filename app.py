@@ -14,7 +14,7 @@ from IPython import embed
 
 # from forms import 
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
-from forms import SignupForm, GuessPokemon
+from forms import SignupForm, LoginForm, GuessPokemon
 
 CURR_USER_KEY = "curr_user"
 
@@ -53,6 +53,18 @@ def add_user_to_g():
     else:
         g.user = None
 
+def do_login(user):
+    """Log in user."""
+
+    session[CURR_USER_KEY] = user.id
+
+
+def do_logout():
+    """Logout user."""
+
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+
 
 @app.route('/')
 def direct_home():
@@ -62,6 +74,7 @@ def direct_home():
 @app.route('/home')
 def homepage():
     """Example starter page"""
+    # embed()
 
     return render_template('homepage.html')
 
@@ -70,40 +83,65 @@ def homepage():
 def signup():
     """Sign up new user and add to database"""
 
-    # If no user signed in, run the rest of the code. Else, return
-    if not g.user:
-        form = SignupForm()
+    form = SignupForm()
 
-        if form.validate_on_submit():
-            try:
-                user = User.signup(
-                    username=form.username.data.lower(),
-                    nickname=form.nickname.data,
-                    email = form.email.data,
-                    password=form.password.data
-                )
-                db.session.commit()
-            except IntegrityError:
-                flash("Username is already taken", 'danger')
-                return render_template('users/signup.html')
+    if form.validate_on_submit():
+        try:
+            user = User.signup(
+                username=form.username.data.lower(),
+                nickname=form.nickname.data,
+                email = form.email.data,
+                password=form.password.data
+            )
+            db.session.commit()
+
+            card = Card(user_id = user.id)
+            db.session.add(card)
+            db.session.commit()
             
-            session[CURR_USER_KEY] = user.id
-
-            return redirect('/')
-        
-        else:
+        except IntegrityError:
+            flash("Username is already taken", 'danger')
             return render_template('users/signup.html', form = form)
+            
+        do_login(user)
+        return redirect('/')
         
-    return
+    else:
+        return render_template('users/signup.html', form = form)
 
 
-# @app.route('/login')
-# def login():
-#     """Login user"""
-#     if g.user:
-#         return
-#     else:
-#         print("Login page")
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    """Login user"""
+    form = LoginForm()
+
+    if form.validate_on_submit():
+
+        user = User.authenticate(username=form.username.data.lower(),
+                                         password=form.password.data)
+        
+        if user:
+            do_login(user)
+            flash(f"Welcome back, {user.username}!", "success")
+            return redirect("/home")
+            
+        flash("Invalid Username or Password", "danger")
+
+    return render_template("users/login.html", form=form)
+    
+@app.route('/logout')
+def logout():
+    """Handle user logout"""
+
+    if not g.user:
+        flash("You are not currently logged in", "danger")
+    else:
+        do_logout()
+        flash("Successfully logged out", "success")
+
+    return redirect('/home')
+
+            
 
 
 @app.route('/generate')
@@ -117,11 +155,12 @@ def gen_pokemon():
     form = GuessPokemon()
 
     can_gen = check_can_gen()
+    # embed()
 
     # User has already caught a pokemon today
     if can_gen == False:
         flash("You've already caught a pokemon today!")
-        return redirect('/')
+        return redirect('/home')
     
     # User has generated a pokemon today but has not caught it
     elif isinstance(can_gen, UserPkmn):
@@ -133,6 +172,13 @@ def gen_pokemon():
 
     # If the user has neither caught NOR generated a pokemon today, generate a new pokemon
     elif can_gen == True:
+
+        # First check if the user still has a previously uncaught pokemon. If so, delete the pokemon from the database. Might mess around and change this later to add a "pokemon orphanage" or something where unclaimed pokemon can be caught, perhaps also daily. would mean maybe adding a "filter orphaned" function to the UserPkmn model... hmmn...
+        if CURR_GENNED_KEY in session:
+            last_genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
+            db.session.delete(last_genned)
+            db.session.commit()
+        
         genned = UserPkmn.gen_pokemon()
         species = Pokemon.query.get(genned.pokemon_id).species
 
@@ -145,28 +191,98 @@ def gen_pokemon():
 
 @app.route('/catch/<int:genned_id>', methods=["POST"])
 def catch_pokemon(genned_id):
-    """User attempts to catch generated pokemon"""
+    """User attempts to catch generated pokemon. This is mostly done via a Javascript POST request to this route."""
     
     genned = UserPkmn.query.get(genned_id)
     input = request.json["species"]
-
-    print(f"""
--------------------------------------------------------
-          {input}
-          {g.user}
-          {genned}
--------------------------------------------------------""")
-    # embed()
     response = g.user.catch_pokemon(g.user, genned, input)
-    print(response)
-    # print(response)
+
+    if response == "Success":
+        session.pop(CURR_GENNED_KEY)
+
     return response
 
 
+@app.route('/profile/<int:userid>')
+# @login_required
+def view_profile(userid):
+    """View user profile"""
+    if g.user.id != userid:
+        flash('Unauthorized action.', 'danger')
+        return redirect('/home')
+
+    else:
+        card = Card.query.filter(Card.user_id == userid).one()
+        slotted = card.return_slotted()
+        # list_slotted = []
+
+        # for slot in slotted:
+            # list_slotted.append(slotted.get(slot))
+
+        # embed()
+
+        return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
+        #card_list = list_slotted
+
+##############################################
+# CURRENT WIP BELOW. YOU ARE HERE!
+############################################## 
+
+@app.route('/<int:userid>/card/edit', methods=["GET", "POST"])
+def edit_card(userid):
+    """Allow user to modify their card to their liking"""
+
+    if g.user.id != userid:
+        flash('Unauthorized action.', 'danger')
+        return redirect('/home')
+
+    else:
+        card = Card.query.filter(Card.user_id == userid).one()
+        slotted = card.return_slotted()
+        
+
+        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
 
 
+@app.route('/<int:userpkmn_id>/pokemon/edit')
+def edit_pokemon(userpkmn_id):
+    """Allow user to customize their pokemon"""
     
+    pokemon = UserPkmn.query.get(userpkmn_id)
+    if pokemon not in g.user.pokemon:
+        print("YOU DON'T OWN THIS POKEMON!")
+        print("Continue this later. Idk if this is gonna return the way I want it to so I've gotta inspect that a little later")
+        return
+    return
 
+
+
+# This is how to turn data into jsonify-able data for javascript
+
+# def serialize(self):
+#         return {
+#             "id" : self.id,
+#             "flavor" : self.flavor,
+#             "size" : self.size,
+#             "rating" : self.rating,
+#             "image" : self.image
+#     }
+
+# then return
+# serialized = userpkmn_data.serialize()
+# return (jsonify(userpkmn = serialized)
+
+# Click slot. Make button active. Click chosen pokemon. collect slot data from active button, collect userpkmn id from chosen pokemon, send data to card editing route. Update card slot on database, return data needed to manipulate DOM (sprite, id, species, nickname)
+
+# Will need it to look something like this
+
+def serialize_userpkmn(obj):
+    return {
+        "sprite" : obj.sprite,
+        "userpkmn_id" : obj.id,
+        "species" : obj.species,
+        "nickname" : obj.nickname
+    }
 
 
 

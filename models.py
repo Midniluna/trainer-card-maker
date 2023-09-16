@@ -54,6 +54,25 @@ class Pokemon(db.Model):
         return all_myths
 
 
+#  ------------------------------------------
+#  ------------------------------------------
+
+class Box(db.Model):
+    
+    """Table connecting User data, Pokemon data, and each UserPkmn's data"""
+
+    __tablename__ = "box"
+    
+    # Who owns the pokemon?
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key = True)
+    # What's special about this user's pokemon? Nickname? Shiny?
+    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete="CASCADE"), primary_key=True)
+
+    def __repr__(self):
+        return f"<User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}>"
+
+
+
 
 #  ------------------------------------------
 #  ------------------------------------------
@@ -69,12 +88,15 @@ class User(db.Model):
     email = db.Column(db.Text, nullable = False, unique=True)
     password = db.Column(db.Text, nullable=False)
     bio = db.Column(db.String, nullable=True)
+    img_url = db.Column(db.Text, default = '/static/images/default-pic.png')
     last_catch = db.Column(db.Text, default = None)
     last_genned = db.Column(db.Text, default = None)
 
     # This user's pokemon
     pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete")
-    card = db.relationship("Card", back_populates="users", cascade="all, delete")
+    # card = db.relationship("Card", cascade="all, delete")
+
+    # slotted = db.relationship("User", secondary="card", primaryjoin=(Card.user_id))
 
     @classmethod
     def signup(cls, username, nickname, password, email):
@@ -145,7 +167,7 @@ class UserPkmn(db.Model):
     __tablename__ = "users_pokemon"
 
     id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.Text, nullable=True, default=None)
+    nickname = db.Column(db.String(12), nullable=True, default=None)
     is_shiny = db.Column(db.Boolean, nullable = False)
     sprite = db.Column(db.Text)
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
@@ -210,7 +232,8 @@ class UserPkmn(db.Model):
         # ^ show whether or not there's a shiny sprite
 
             ###################### UNCOMMENT THIS SECTION FOR TESTING ######################
-
+                    # edit: actually I honestly don't need to uncomment it at all
+                    
         # if "shine" input is true/exists, guarantee genned pokemon is shiny unless there is no shiny sprite. This section is solely for testing purposes
 
         if shine:
@@ -238,44 +261,60 @@ class UserPkmn(db.Model):
         # Do NOT add to session or commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
 
         return genned
+    
+    def serialize_userpkmn(self):
+        return {
+            "sprite" : self.sprite,
+            "userpkmn_id" : self.id,
+            "species" : self.pokemon.species,
+            "nickname" : self.nickname or ""
+        }
+
 
         
-
-
-#  ------------------------------------------
-#  ------------------------------------------
-
-class Box(db.Model):
-    
-    """Table connecting User data, Pokemon data, and each UserPkmn's data"""
-
-    __tablename__ = "box"
-    
-    # Who owns the pokemon?
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key = True)
-    # What's special about this user's pokemon? Nickname? Shiny?
-    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete="CASCADE"), primary_key=True)
-
-    def __repr__(self):
-        return f"<User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}>"
-
-
-
 #  ------------------------------------------
 #  ------------------------------------------
 
 class Card(db.Model):
     """Trainer card / User's Party Pokemon ; User and their 6 chosen display pokemon"""
 
+    # Note: I don't really like how busy this looks, but with my previous iteration, it would have been incredibly hard to keep track of which pokemon is in which slot of the trainer card, and would have likely required a lot more logic in either javascript or Python. I know it's something I could add to the session, but my concern with that is that if the session was cleared somehow (users can manually clear the session... I don't know if there are other things that can?), I wouldn't want their card wiped, so the best solution is to keep it in the database. This way it's also easier to make sure the user does not have the ability to slot more than 6 pokemon at a time, so I don't have to add any logic for that.
+    # It just makes the most sense
+
     __tablename__ = 'card'
     
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), primary_key=True)
-    userpkmn_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key=True)
 
-    users = db.relationship("User")
+    slot1_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+    slot2_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+    slot3_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+    slot4_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+    slot5_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+    slot6_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
+
+    user = db.relationship("User", backref="card", primaryjoin=(User.id == user_id))
+
+
+    def return_slotted(self):
+        """Compile pokemon by user-dictated position on their respective trainer card. Returns list of pokemon ordered by first to sixth slot on given card."""
+
+        allslotted = {1 : UserPkmn.query.filter_by(id = self.slot1_id).one_or_none(), 2 : UserPkmn.query.filter_by(id = self.slot2_id).one_or_none(), 3 : UserPkmn.query.filter_by(id = self.slot3_id).one_or_none(), 4 :UserPkmn.query.filter_by(id = self.slot4_id).one_or_none(), 5 : UserPkmn.query.filter_by(id = self.slot5_id).one_or_none(), 6 : UserPkmn.query.filter_by(id = self.slot6_id).one_or_none()}
+
+        return allslotted
+    
+    # can do :
+    # card.query.filter(Card.user_id == user.id).one()
+    # slotted = card.return.slotted() ((returns dict of pokemon by slot #))
+    # for slot in slotted:
+    #     print/return (slotted.get(slot))
+    # ^^^ returns each pokemon object in order by slot
 
     def __repr__(self):
-        return f"<id: {self.id}, user id: {self.user_id}, pkmn id: {self.userpkmn_id}>"
+        return f"<user id: {self.user_id}, slotted pokemon: {self.return_slotted()}>"
+
+
+#  ------------------------------------------
+#  ------------------------------------------
     
 
 

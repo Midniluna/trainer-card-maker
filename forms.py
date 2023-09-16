@@ -12,9 +12,19 @@ class SignupForm(FlaskForm):
     email = StringField('Enter e-mail', validators=[InputRequired(), Email()])
     password = PasswordField('Enter password', validators=[InputRequired(), Length(min=6)], render_kw={'placeholder': 'Must be at least 6 characters'})
 
+class LoginForm(FlaskForm):
+    """User login form"""
+    username = StringField('Enter Username', validators=[InputRequired()])
+    password = PasswordField('Enter password', validators=[InputRequired()])
+
 class GuessPokemon(FlaskForm):
+    """Form for guessing generated pokemon"""
     species = StringField("Who's that pokemon?", validators=[InputRequired(message="Please enter a valid pokemon")])
+
+class EditCardForm(FlaskForm):
+    """Form for editing user's trainer card"""
     
-class PokemonSelectForm(FlaskForm):
-    """Form for selecting pokemon"""
-    pokemon = SelectField('Select Pokemon', choices=[])
+    
+# class PokemonSelectForm(FlaskForm):
+#     """Form for selecting pokemon"""
+#     pokemon = SelectField('Select Pokemon', choices=[])

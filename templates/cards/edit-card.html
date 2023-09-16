@@ -1,0 +1,43 @@
+{% extends 'base.html' %} {% block content %} 
+<!-- THIS segment shows what your card will look like in the end -->
+<div style="text-align: center">{% include '/cards/your-trainer-card.html' %}</div>
+
+<hr>
+
+<!-- THIS segment shows editable pokemon + all available pokemon -->
+<div style="display: flex; flex-direction: row; justify-content: space-between;">
+    <div class="user-pokemon-container edit-card"  style="text-align: center; justify-content: center;">
+        {% for slot in slotted %} {% if slotted.get(slot) %}
+        <div class="pokemon-container">
+            {% if slotted.get(slot).nickname %}
+            <span style="display: block">{{slotted.get(slot).nickname}}</span>
+            {% endif %}
+            <img src="{{slotted.get(slot).sprite}}" alt="" class="pokemon-image" />
+            <span style="display: block"
+            >{{slotted.get(slot).pokemon.species.capitalize()}}</span
+            >
+            <small style="font-size: 12px;"><b>ID: #{{slotted.get(slot).id}}</b></small>
+            <button class="btn btn-primary" data-slot-id="{{slot}}">Select Slot</button>
+        </div>
+<!-- data-userpkmn-id="pokemon id goes here" -->
+        {% else %}
+        <div class="pokemon-container">
+            <span>(nickname)</span>
+            <img
+            src="{{url_for('static', filename='images/no-symbol.png')}}"
+            alt=""
+            class="pokemon-image"
+            />
+            <span style="display: block">No pokemon</span>
+            <small style="font-size: 12px;"><b>ID: Null</b></small>
+            <button class="btn btn-primary" data-slot-id="{{slot}}">Select Slot</button>
+        </div>
+        {% endif %} {% endfor %}
+    </div>
+    
+    <div class="show-editable-pokemon" style="display: flex; flex-wrap: wrap;">
+        {% include 'display-pokemon.html' %}
+    </div>
+</div>
+
+{% endblock %}

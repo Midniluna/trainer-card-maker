@@ -11,26 +11,30 @@
 		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
 		crossorigin="anonymous"
 	/>
+	<link
+		rel="stylesheet"
+		href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+	/>
 	<link rel="shortcut icon" href="/static/favicon.ico" />
-	<link rel="stylesheet" href="/static/style.css" />
+	<link rel="stylesheet" href="{{url_for('static', filename='style.css')}}" />
 	<body class="bg-light">
 		<!-- NAV -->
 		<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
 			<div class="collapse navbar-collapse">
 				<ul class="navbar-nav mr-auto">
 					<li class="nav-item">
-						<a href="/home" class="nav-link">Home</a>
+						<a href="{{url_for('homepage')}}" class="nav-link">Home</a>
 					</li>
 					{% if not g.user %}
 					<li class="nav-item">
-						<a href="#" class="nav-link">Login</a>
+						<a href="{{url_for('login')}}" class="nav-link">Login</a>
 					</li>
 					<li class="nav-item">
 						<a href="{{url_for('signup')}}" class="nav-link">Signup</a>
 					</li>
 					{% else %}
 					<li class="nav-item">
-						<a href="#" class="nav-link">Logout</a>
+						<a href="{{url_for('logout')}}" class="nav-link">Logout</a>
 					</li>
 					{% endif %}
 				</ul>
@@ -38,7 +42,7 @@
 			<div class="collapse navbar-collapse mx-auto">
 				<ul class="navbar-nav ml-auto">
 					<li class="nav-item">
-						<a href="#" class="nav-link">Profile</a>
+						<a href="/profile/{{g.user.id}}" class="nav-link">Profile</a>
 					</li>
 				</ul>
 			</div>

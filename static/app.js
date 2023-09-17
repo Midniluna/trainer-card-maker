@@ -63,7 +63,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 
 // This is to allow user to edit their card
 
-$(".select-slot").on("click", function (evt) {
+$(".select-slot").on("click", async function (evt) {
 	evt.preventDefault();
 	let $target = $(this)
 
@@ -79,16 +79,65 @@ $(".select-slot").on("click", function (evt) {
 		if ($target.hasClass("active")) {
 			$target.toggleClass("active");
 		}
-		// If there is a selected button and it is not this one, deselect previously active and activate new target
+		// If user selects one slot and then another slot, swap the pokemons' positions
 		else {
+			let slot = $active.attr("data-slot-id")
+			let slot2 = $target.attr("data-slot-id")
+			let pkmn_id = $active.attr("data-userpkmn-id")
+			console.log(pkmn_id)
+			let pkmn2_id = $target.attr("data-userpkmn-id")
+			console.log(pkmn2_id)
+			let user_id = $(".card-container").attr("data-user-id")
+
+			await axios.patch(`${BASE_URL}/card/edit/${user_id}/submit`, {
+				slot,
+				slot2,
+				pkmn_id,
+				pkmn2_id,
+			})
+
+			// Swap pokemon data on DOM
+
+			let $img = $active.parent().find(".pokemon-image");
+			let $nickname = $active.parent().find(".nickname");
+			let $species = $active.parent().find(".species");
+			let $id = $active.parent().find(".pkmnID");
+
+			let $img2 = $target.parent().find(".pokemon-image");
+			let $nickname2 = $target.parent().find(".nickname");
+			let $species2 = $target.parent().find(".species");
+			let $id2 = $target.parent().find(".pkmnID")
+
+			// Save data from first slot to append to second slot and vice versa
+			let swapimg = $img.attr("src")
+			let swapnickname = $nickname.text()
+			let swapspecies = $species.text()
+			let swapid =  $id.text()
+
+			let swapimg2 = $img2.attr("src")
+			let swapnickname2 = $nickname2.text()
+			let swapspecies2 = $species2.text()
+			let swapid2 =  $id2.text()
+			
+			// Fill first slot's data with data from second slot
+			$img.attr("src", swapimg2);
+			$nickname.text(swapnickname2);
+			$species.text(swapspecies2);
+			$id.text(swapid2)
+
+			// Now fill second slot's data with data from first slot
+			$img2.attr("src", swapimg);
+			$nickname2.text(swapnickname);
+			$species2.text(swapspecies);
+			$id2.text(swapid)
+
 			$active.toggleClass("active");
-			$target.toggleClass("active");
 		}
 	}
 	return
 })
 
-// This is where the magic happens
+
 
 $(".select-mon").on("click", async function (evt) {
 	evt.preventDefault();
@@ -116,10 +165,14 @@ $(".select-mon").on("click", async function (evt) {
 			
 			// Otherwise, display new pokemon on screen.
 			else {
-			
+				
+				// Tell python slots are not being swapped
+				let pkmn2_id= "None" 
+
 				let resp = await axios.post(`${BASE_URL}/card/edit/${user_id}/submit`, {
 					slot,
 					pkmn_id,
+					pkmn2_id,
 				});
 				img = $active.parent().find(".pokemon-image");
 				nickname = $active.parent().find(".nickname");

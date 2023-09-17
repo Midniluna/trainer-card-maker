@@ -6,7 +6,7 @@ import datetime
 from flask import Flask, render_template, flash, redirect, request, session, g, url_for, jsonify
 from flask_login import LoginManager, login_required
 
-from sqlalchemy import and_
+from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -239,15 +239,31 @@ def edit_card(userid):
 
         return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
     
-@app.route('/card/edit/<int:userid>/submit', methods=["POST"])
+@app.route('/card/edit/<int:userid>/submit', methods=["PATCH", "POST"])
 def handle_card_edit(userid):
     """Handle's ajax request to for modifying a pokemon"""
-    
+
+    # Okay. Let's see. 
+    # Think about this.
+    # You're given the pokemon's ID and slot number. 
     id = int(request.json["pkmn_id"])
     slot = int(request.json["slot"])
     card = Card.query.filter(Card.user_id == userid).one()
     userpkmn = UserPkmn.query.get(id)
 
+    pkmn_slot1 = card.slot1_id
+    pkmn_slot2 = card.slot2_id
+    pkmn_slot3 = card.slot3_id
+    pkmn_slot4 = card.slot4_id
+    pkmn_slot5 = card.slot5_id
+    pkmn_slot6 = card.slot6_id
+
+    embed()
+
+    if request.json["pkmn2_id"] != "None" and request.json["slot2"] != "None":
+        id2 = int(request.json["pkmn2_id"])
+        slot2 = request.json["slot2"]
+        return "yippie"
 
     # I already know I'm gonna HATE this bc it's gonna look ugly but </3
     if slot == 1:

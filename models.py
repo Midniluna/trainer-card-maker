@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import select
 from flask import session
 from IPython import embed
 import datetime
@@ -280,7 +281,7 @@ class UserPkmn(db.Model):
         return {
             "sprite" : self.sprite,
             "userpkmn_id" : self.id,
-            "species" : self.pokemon.species,
+            "species" : self.pokemon.species.capitalize(),
             "nickname" : self.nickname or ""
         }
 
@@ -312,9 +313,20 @@ class Card(db.Model):
     def return_slotted(self):
         """Compile pokemon by user-dictated position on their respective trainer card. Returns list of pokemon ordered by first to sixth slot on given card."""
 
+        # allslotted = {1: {"pokemon" : <Pokemon> , "cardslot" ; <card>.slot1_id}}
+        # If I do this... "cardslot" will return the DATA from that slot... which I can manipulate....? Or I could make a function that returns  that depending on the value given... but I need it specifically to return the column with manipulatable data... would I have to do a join to accomplish that...? A way to filter and return That Column, not just the raw string data... return that column...
+
         allslotted = {1 : UserPkmn.query.filter_by(id = self.slot1_id).one_or_none(), 2 : UserPkmn.query.filter_by(id = self.slot2_id).one_or_none(), 3 : UserPkmn.query.filter_by(id = self.slot3_id).one_or_none(), 4 :UserPkmn.query.filter_by(id = self.slot4_id).one_or_none(), 5 : UserPkmn.query.filter_by(id = self.slot5_id).one_or_none(), 6 : UserPkmn.query.filter_by(id = self.slot6_id).one_or_none()}
 
         return allslotted
+    
+    # HOLY SHIT I DID IT ACTUALLY? THANK YOU STACK OVERFLOW
+    # OKAY. 
+    def update(self, kwargs):
+        """Simply submit a dictionary where they Keys are column names (i.e. 'slot1_id') and they Values are the desired userpkmn ids"""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
     
     # can do :
     # card.query.filter(Card.user_id == user.id).one()

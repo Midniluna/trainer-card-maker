@@ -243,65 +243,42 @@ def edit_card(userid):
 def handle_card_edit(userid):
     """Handle's ajax request to for modifying a pokemon"""
 
-    # Okay. Let's see. 
-    # Think about this.
-    # You're given the pokemon's ID and slot number. 
     id = int(request.json["pkmn_id"])
-    slot = int(request.json["slot"])
+    slot = request.json["slot"]
     card = Card.query.filter(Card.user_id == userid).one()
     userpkmn = UserPkmn.query.get(id)
 
-    pkmn_slot1 = card.slot1_id
-    pkmn_slot2 = card.slot2_id
-    pkmn_slot3 = card.slot3_id
-    pkmn_slot4 = card.slot4_id
-    pkmn_slot5 = card.slot5_id
-    pkmn_slot6 = card.slot6_id
-
-    embed()
-
-    if request.json["pkmn2_id"] != "None" and request.json["slot2"] != "None":
+    if request.json["slot2"] != "None" and request.json["pkmn2_id"] != "None":
         id2 = int(request.json["pkmn2_id"])
         slot2 = request.json["slot2"]
+
+        # slot1 will now have userpkmn2's id, and slot2 will have userpkmn1's id
+        swap_obj = {slot : id2, slot2 : id}
+        card.update(swap_obj)
+
+        # now commit changes
+
+        db.session.commit()
         return "yippie"
 
-    # I already know I'm gonna HATE this bc it's gonna look ugly but </3
-    if slot == 1:
-        card.slot1_id = userpkmn.id
-    elif slot == 2:
-        card.slot2_id = userpkmn.id
-    elif slot == 3:
-        card.slot3_id = userpkmn.id
-    elif slot == 4:
-        card.slot4_id = userpkmn.id
-    elif slot == 5:
-        card.slot5_id = userpkmn.id
-    elif slot == 6:
-        card.slot6_id = userpkmn.id
+    else:
 
-    db.session.commit()
+        update_slot = {slot : id}
+        card.update(update_slot)
 
-    return jsonify(userpkmn.serialize_userpkmn())
+        db.session.commit()
+
+        return jsonify(userpkmn.serialize_userpkmn())
 
 @app.route('/card/edit/<int:userid>/delete', methods=["POST"])
 def handle_card_delete(userid):
     """Handle's ajax request to remove a pokemon from their card"""
 
-    slot = int(request.json["slot_id"])
+    slot = request.json["slot_id"]
     card = Card.query.filter(Card.user_id == userid).one()
 
-    if slot == 1:
-        card.slot1_id = None
-    elif slot == 2:
-        card.slot2_id = None
-    elif slot == 3:
-        card.slot3_id = None
-    elif slot == 4:
-        card.slot4_id = None
-    elif slot == 5:
-        card.slot5_id = None
-    elif slot == 6:
-        card.slot6_id = None
+    delete_obj = {slot : None}
+    card.update(delete_obj)
 
     db.session.commit()
     

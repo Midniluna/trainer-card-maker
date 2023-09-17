@@ -11,20 +11,22 @@
 <!-- THIS segment shows editable pokemon + all available pokemon -->
 <div style="display: flex; flex-direction: row; justify-content: space-between; margin-bottom: 50px;">
     <div class="user-pokemon-container edit-card"  style="text-align: center; justify-content: center;">
-        {% for slot in slotted %} {% if slotted.get(slot) %}
+        <!-- for slot position in card, if a pokemon exists there, insert data -->
+        {% for slot_pos in slotted %} {% if slotted.get(slot_pos) %}
         <div class="pokemon-container">
-            {% if slotted.get(slot).nickname %}
-            <span style="display: block" class="nickname">{{slotted.get(slot).nickname}}</span>
+            {% if slotted.get(slot_pos).nickname %}
+            <span style="display: block" class="nickname">{{slotted.get(slot_pos).nickname}}</span>
             {% endif %}
-            <img src="{{slotted.get(slot).sprite}}" alt="" class="pokemon-image" />
+            <img src="{{slotted.get(slot_pos).sprite}}" alt="" class="pokemon-image" />
             <span style="display: block" class="species"
-            >{{slotted.get(slot).pokemon.species.capitalize()}}</span
+            >{{slotted.get(slot_pos).pokemon.species.capitalize()}}</span
             >
-            <small style="font-size: 12px;"><b class="pkmnID" >ID: #{{slotted.get(slot).id}}</b></small>
-            <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot).id}}" data-slot-id="{{slot}}">Select Slot</button>
-            <button class="btn btn-danger delete-slot" data-slot-id="{{slot}}">Remove</button>
+            <small style="font-size: 12px;"><b class="pkmnID" >ID: #{{slotted.get(slot_pos).id}}</b></small>
+            <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot_pos).id}}" data-slot-id="{{slot_pos}}">Select Slot</button>
+            <button class="btn btn-danger delete-slot" data-slot-id="{{slot_pos}}">Remove</button>
         </div>
 <!-- data-userpkmn-id="pokemon id goes here" -->
+        <!-- Else, insert default data -->
         {% else %}
         <div class="pokemon-container">
             <span class="nickname">(nickname)</span>
@@ -35,7 +37,7 @@
             />
             <span style="display: block" class="species">No pokemon</span>
             <small style="font-size: 12px;"><b class="pkmnID">ID: Null</b></small>
-            <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot).id}}" data-slot-id="{{slot}}">Select Slot</button>
+            <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot_pos).id}}" data-slot-id="{{slot_pos}}">Select Slot</button>
         </div>
         {% endif %} {% endfor %}
     </div>

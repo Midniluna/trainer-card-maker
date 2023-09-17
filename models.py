@@ -316,7 +316,7 @@ class Card(db.Model):
         # allslotted = {1: {"pokemon" : <Pokemon> , "cardslot" ; <card>.slot1_id}}
         # If I do this... "cardslot" will return the DATA from that slot... which I can manipulate....? Or I could make a function that returns  that depending on the value given... but I need it specifically to return the column with manipulatable data... would I have to do a join to accomplish that...? A way to filter and return That Column, not just the raw string data... return that column...
 
-        allslotted = {1 : UserPkmn.query.filter_by(id = self.slot1_id).one_or_none(), 2 : UserPkmn.query.filter_by(id = self.slot2_id).one_or_none(), 3 : UserPkmn.query.filter_by(id = self.slot3_id).one_or_none(), 4 :UserPkmn.query.filter_by(id = self.slot4_id).one_or_none(), 5 : UserPkmn.query.filter_by(id = self.slot5_id).one_or_none(), 6 : UserPkmn.query.filter_by(id = self.slot6_id).one_or_none()}
+        allslotted = {"slot1_id" : UserPkmn.query.filter_by(id = self.slot1_id).one_or_none(), "slot2_id" : UserPkmn.query.filter_by(id = self.slot2_id).one_or_none(), "slot3_id" : UserPkmn.query.filter_by(id = self.slot3_id).one_or_none(), "slot4_id" :UserPkmn.query.filter_by(id = self.slot4_id).one_or_none(), "slot5_id" : UserPkmn.query.filter_by(id = self.slot5_id).one_or_none(), "slot6_id" : UserPkmn.query.filter_by(id = self.slot6_id).one_or_none()}
 
         return allslotted
     

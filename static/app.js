@@ -167,10 +167,12 @@ $(".select-mon").on("click", async function (evt) {
 			else {
 				
 				// Tell python slots are not being swapped
-				let pkmn2_id= "None" 
+				let slot2 = "None" 
+				let pkmn2_id = "None" 
 
 				let resp = await axios.post(`${BASE_URL}/card/edit/${user_id}/submit`, {
 					slot,
+					slot2,
 					pkmn_id,
 					pkmn2_id,
 				});

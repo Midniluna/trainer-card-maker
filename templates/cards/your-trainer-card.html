@@ -1,4 +1,4 @@
-<div class="card-container">
+<div class="card-container" data-user-id="{{user.id}}">
 	<!-- data-userpkmn-id="pokemon id goes here" -->
 	{% for slot in slotted %} {% if slotted.get(slot) %}
 	<div class="pokemon-container">
@@ -6,7 +6,7 @@
 		<span style="display: block">{{slotted.get(slot).nickname}}</span>
 		{% endif %}
 		<img src="{{slotted.get(slot).sprite}}" alt="" class="pokemon-image" />
-		<span style="display: block"
+		<span style="display: block" class="species"
 		>{{slotted.get(slot).pokemon.species.capitalize()}}</span
 		>
 		<small style="font-size: 12px;"><b>ID: #{{slotted.get(slot).id}}</b></small>
@@ -19,8 +19,8 @@
 		alt=""
 		class="pokemon-image"
 		/>
-		<span style="display: block">No pokemon</span>
-		<small style="font-size: 12px;"><b>ID: Null</b></small>
+		<span style="display: block" class="species">No pokemon</span>
+		<small style="font-size: 12px;" class="pkmnID"><b>ID: Null</b></small>
 	</div>
 	{% endif %} {% endfor %}
 </div>

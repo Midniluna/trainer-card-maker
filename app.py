@@ -13,7 +13,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from IPython import embed
 
 # from forms import 
-from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
+from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY, serialize_userpkmn
 from forms import SignupForm, LoginForm, GuessPokemon
 
 CURR_USER_KEY = "curr_user"
@@ -38,6 +38,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+
+
 
 
 @login_manager.user_loader
@@ -215,21 +217,14 @@ def view_profile(userid):
     else:
         card = Card.query.filter(Card.user_id == userid).one()
         slotted = card.return_slotted()
-        # list_slotted = []
-
-        # for slot in slotted:
-            # list_slotted.append(slotted.get(slot))
-
-        # embed()
 
         return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
-        #card_list = list_slotted
 
 ##############################################
 # CURRENT WIP BELOW. YOU ARE HERE!
 ############################################## 
 
-@app.route('/<int:userid>/card/edit', methods=["GET", "POST"])
+@app.route('/card/edit/<int:userid>')
 def edit_card(userid):
     """Allow user to modify their card to their liking"""
 
@@ -243,7 +238,58 @@ def edit_card(userid):
         
 
         return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
+    
+@app.route('/card/edit/<int:userid>/submit', methods=["POST"])
+def handle_card_edit(userid):
+    """Handle's ajax request to for modifying a pokemon"""
+    
+    id = int(request.json["pkmn_id"])
+    slot = int(request.json["slot"])
+    card = Card.query.filter(Card.user_id == userid).one()
+    userpkmn = UserPkmn.query.get(id)
 
+
+    # I already know I'm gonna HATE this bc it's gonna look ugly but </3
+    if slot == 1:
+        card.slot1_id = userpkmn.id
+    elif slot == 2:
+        card.slot2_id = userpkmn.id
+    elif slot == 3:
+        card.slot3_id = userpkmn.id
+    elif slot == 4:
+        card.slot4_id = userpkmn.id
+    elif slot == 5:
+        card.slot5_id = userpkmn.id
+    elif slot == 6:
+        card.slot6_id = userpkmn.id
+
+    db.session.commit()
+
+    return jsonify(userpkmn.serialize_userpkmn())
+
+@app.route('/card/edit/<int:userid>/delete', methods=["POST"])
+def handle_card_delete(userid):
+    """Handle's ajax request to remove a pokemon from their card"""
+
+    slot = int(request.json["slot_id"])
+    card = Card.query.filter(Card.user_id == userid).one()
+
+    if slot == 1:
+        card.slot1_id = None
+    elif slot == 2:
+        card.slot2_id = None
+    elif slot == 3:
+        card.slot3_id = None
+    elif slot == 4:
+        card.slot4_id = None
+    elif slot == 5:
+        card.slot5_id = None
+    elif slot == 6:
+        card.slot6_id = None
+
+    db.session.commit()
+    
+    return "Success!"
 
 @app.route('/<int:userpkmn_id>/pokemon/edit')
 def edit_pokemon(userpkmn_id):
@@ -276,14 +322,6 @@ def edit_pokemon(userpkmn_id):
 # Click slot. Make button active. Click chosen pokemon. collect slot data from active button, collect userpkmn id from chosen pokemon, send data to card editing route. Update card slot on database, return data needed to manipulate DOM (sprite, id, species, nickname)
 
 # Will need it to look something like this
-
-def serialize_userpkmn(obj):
-    return {
-        "sprite" : obj.sprite,
-        "userpkmn_id" : obj.id,
-        "species" : obj.species,
-        "nickname" : obj.nickname
-    }
 
 
 

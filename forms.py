@@ -21,10 +21,11 @@ class GuessPokemon(FlaskForm):
     """Form for guessing generated pokemon"""
     species = StringField("Who's that pokemon?", validators=[InputRequired(message="Please enter a valid pokemon")])
 
-class EditCardForm(FlaskForm):
-    """Form for editing user's trainer card"""
+# class EditCardForm(FlaskForm):
+#     """Form for editing user's trainer card"""
     
     
-# class PokemonSelectForm(FlaskForm):
-#     """Form for selecting pokemon"""
-#     pokemon = SelectField('Select Pokemon', choices=[])
+class PokemonSelectForm(FlaskForm):
+    """Form for selecting pokemon"""
+
+    pokemon = SelectField('Select Pokemon', choices=[])

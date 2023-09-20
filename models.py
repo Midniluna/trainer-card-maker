@@ -49,9 +49,6 @@ class Pokemon(db.Model):
     sprite = db.Column(db.String, nullable=False)
     shiny_sprite = db.Column(db.String)
     url = db.Column(db.String, nullable=False, unique=True)
-
-    def __repr__(self):
-        return f"<Pokemon #{self.id}, {self.variant_name}, dexnum: {self.species_dexnum}>"
     
     @classmethod
     def filter_common(cls):
@@ -67,6 +64,9 @@ class Pokemon(db.Model):
     def filter_mythicals(cls):
         all_myths = cls.query.filter(cls.is_mythical == True).all()
         return all_myths
+
+    def __repr__(self):
+        return f"<Pokemon #{self.id}, {self.variant_name}, dexnum: {self.species_dexnum}>"
 
 
 #  ------------------------------------------
@@ -91,91 +91,6 @@ class Box(db.Model):
 
 #  ------------------------------------------
 #  ------------------------------------------
-
-class User(db.Model):
-    """User in the system"""
-
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.Text, nullable=False)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    email = db.Column(db.Text, nullable = False, unique=True)
-    password = db.Column(db.Text, nullable=False)
-    bio = db.Column(db.String, nullable=True)
-    img_url = db.Column(db.Text, default = '/static/images/default-pic.png')
-    last_catch = db.Column(db.Text, default = None)
-    last_genned = db.Column(db.Text, default = None)
-
-    # This user's pokemon. pokemon is deleted upon user deletion, but still may consider revoking that to allow for some type of pokemon-orphanage type deal where users can adopt orphaned pokemon.
-    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True)
-    card = db.relationship("Card", back_populates="user" , cascade="all, delete-orphan")
-
-    # slotted = db.relationship("User", secondary="card", primaryjoin=(Card.user_id))
-
-    @classmethod
-    def signup(cls, username, nickname, password, email):
-        """Sign up user. Hashes password and returns user object"""
-
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
-
-        user = User(
-            nickname=nickname,
-            username=username,
-            email=email,
-            password=hashed_pwd
-        )
-
-        db.session.add(user)
-        return user
-    
-    @classmethod 
-    def authenticate(cls, username, password):
-        """Find user with given name and password. If user with matching username and password is found, return user object. If username and password don't match a user, return false."""
-
-        user = cls.query.filter_by(username=username).first()
-
-        if user:
-            is_auth = bcrypt.check_password_hash(user.password, password)
-            if is_auth:
-                return user
-            
-        return False
-    
-    @classmethod 
-    def catch_pokemon(cls, user, genned, input):
-        """Catch pokemon and give the user/trainer ownership of it. Requires authorized user, generated pokemon, and user input guessing genned pokemon's species"""
-
-        # First check that the user has not already caught a pokemon today
-        t = datetime.datetime.today()
-        today = t.strftime('%m/%d/%Y')
-
-        if user.last_catch == today:
-            return None
-        
-        # if the pokemon species name matches the user's input, add it tothe   database with the user as the owner.
-        pkmn = Pokemon.query.get(genned.pokemon_id)
-
-        if input == pkmn.species:
-
-            # embed()
-            new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
-            db.session.add(new_boxed)
-            user.last_catch = today
-            db.session.commit()
-            return "Success"
-        else:
-            return "Failed"
-    
-
-    def __repr__(self):
-        return f"<User {self.id}, {self.username}, last catch date: {self.last_catch}>"
-
-
-
-#  ------------------------------------------
-#  ------------------------------------------
-
 class UserPkmn(db.Model):
     """Instance of a generated pokemon"""
 
@@ -290,6 +205,91 @@ class UserPkmn(db.Model):
 #  ------------------------------------------
 #  ------------------------------------------
 
+class User(db.Model):
+    """User in the system"""
+
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nickname = db.Column(db.Text, nullable=False)
+    username = db.Column(db.Text, nullable=False, unique=True)
+    email = db.Column(db.Text, nullable = False, unique=True)
+    password = db.Column(db.Text, nullable=False)
+    bio = db.Column(db.String, nullable=True)
+    img_url = db.Column(db.Text, default = '/static/images/default-pic.png')
+    last_catch = db.Column(db.Text, default = None)
+    last_genned = db.Column(db.Text, default = None)
+
+    # This user's pokemon. pokemon is deleted upon user deletion, but still may consider revoking that to allow for some type of pokemon-orphanage type deal where users can adopt orphaned pokemon.
+    pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True, primaryjoin=(UserPkmn.id == Box.userpkmn_id))
+    card = db.relationship("Card", back_populates="user" , cascade="all, delete-orphan")
+
+    # slotted = db.relationship("User", secondary="card", primaryjoin=(Card.user_id))
+
+    @classmethod
+    def signup(cls, username, nickname, password, email):
+        """Sign up user. Hashes password and returns user object"""
+
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+        user = User(
+            nickname=nickname,
+            username=username,
+            email=email,
+            password=hashed_pwd
+        )
+
+        db.session.add(user)
+        return user
+    
+    @classmethod 
+    def authenticate(cls, username, password):
+        """Find user with given name and password. If user with matching username and password is found, return user object. If username and password don't match a user, return false."""
+
+        user = cls.query.filter_by(username=username).first()
+
+        if user:
+            is_auth = bcrypt.check_password_hash(user.password, password)
+            if is_auth:
+                return user
+            
+        return False
+    
+    @classmethod 
+    def catch_pokemon(cls, user, genned, input):
+        """Catch pokemon and give the user/trainer ownership of it. Requires authorized user, generated pokemon, and user input guessing genned pokemon's species"""
+
+        # First check that the user has not already caught a pokemon today
+        t = datetime.datetime.today()
+        today = t.strftime('%m/%d/%Y')
+
+        if user.last_catch == today:
+            return None
+        
+        # if the pokemon species name matches the user's input, add it tothe   database with the user as the owner.
+        pkmn = Pokemon.query.get(genned.pokemon_id)
+
+        if input == pkmn.species:
+
+            # embed()
+            new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
+            db.session.add(new_boxed)
+            user.last_catch = today
+            db.session.commit()
+            return "Success"
+        else:
+            return "Failed"
+    
+
+    def __repr__(self):
+        return f"<User {self.id}, {self.username}, last catch date: {self.last_catch}>"
+
+
+
+#  ------------------------------------------
+#  ------------------------------------------
+
+
 class Card(db.Model):
     """Trainer card / User's Party Pokemon ; User and their 6 chosen display pokemon"""
 
@@ -313,9 +313,6 @@ class Card(db.Model):
     def return_slotted(self):
         """Compile pokemon by user-dictated position on their respective trainer card. Returns list of pokemon ordered by first to sixth slot on given card."""
 
-        # allslotted = {1: {"pokemon" : <Pokemon> , "cardslot" ; <card>.slot1_id}}
-        # If I do this... "cardslot" will return the DATA from that slot... which I can manipulate....? Or I could make a function that returns  that depending on the value given... but I need it specifically to return the column with manipulatable data... would I have to do a join to accomplish that...? A way to filter and return That Column, not just the raw string data... return that column...
-
         allslotted = {"slot1_id" : UserPkmn.query.filter_by(id = self.slot1_id).one_or_none(), "slot2_id" : UserPkmn.query.filter_by(id = self.slot2_id).one_or_none(), "slot3_id" : UserPkmn.query.filter_by(id = self.slot3_id).one_or_none(), "slot4_id" :UserPkmn.query.filter_by(id = self.slot4_id).one_or_none(), "slot5_id" : UserPkmn.query.filter_by(id = self.slot5_id).one_or_none(), "slot6_id" : UserPkmn.query.filter_by(id = self.slot6_id).one_or_none()}
 
         return allslotted
@@ -327,13 +324,8 @@ class Card(db.Model):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-    
-    # can do :
-    # card.query.filter(Card.user_id == user.id).one()
-    # slotted = card.return.slotted() ((returns dict of pokemon by slot #))
-    # for slot in slotted:
-    #     print/return (slotted.get(slot))
-    # ^^^ returns each pokemon object in order by slot
+                
+    # Ohhhhh my god. I can't believe that worked. This literally SAVED MY LIFE my code is GORGEOUS now I am in TEARS
 
     def __repr__(self):
         return f"<user id: {self.user_id}, slotted pokemon: {self.return_slotted()}>"

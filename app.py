@@ -6,7 +6,7 @@ import datetime
 from flask import Flask, render_template, flash, redirect, request, session, g, url_for, jsonify
 from flask_login import LoginManager, login_required
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, or_, asc, desc, select
 from sqlalchemy.exc import IntegrityError
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -210,19 +210,15 @@ def catch_pokemon(genned_id):
 # @login_required
 def view_profile(userid):
     """View user profile"""
-    if g.user.id != userid:
-        flash('Unauthorized action.', 'danger')
-        return redirect('/home')
+    # if g.user and g.user.id != userid:
+    #     flash('Unauthorized action.', 'danger')
+    #     return redirect('/home')
 
-    else:
-        card = Card.query.filter(Card.user_id == userid).one()
-        slotted = card.return_slotted()
+    # else:
+    card = Card.query.filter(Card.user_id == userid).one()
+    slotted = card.return_slotted()
 
-        return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
-
-##############################################
-# CURRENT WIP BELOW. YOU ARE HERE!
-############################################## 
+    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon.all(),slotted = slotted)
 
 @app.route('/card/edit/<int:userid>')
 def edit_card(userid):
@@ -237,7 +233,7 @@ def edit_card(userid):
         slotted = card.return_slotted()
         
 
-        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
+        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon.all(), slotted = slotted, edit = True)
     
     
 @app.route('/card/edit/<int:userid>/submit', methods=["PATCH", "POST"])
@@ -292,7 +288,7 @@ def edit_pokemon(userpkmn_id):
     """Allow user to customize their pokemon"""
     
     pokemon = UserPkmn.query.get(userpkmn_id)
-    if pokemon not in g.user.pokemon:
+    if pokemon not in g.user.pokemon.all():
         print("YOU DON'T OWN THIS POKEMON!")
         print("Continue this later. Idk if this is gonna return the way I want it to so I've gotta inspect that a little later")
         return
@@ -322,6 +318,13 @@ def check_can_gen():
         genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
         return genned
     
+
+##############################################
+# CURRENT WIP BELOW. YOU ARE HERE!
+############################################## 
+
+# def sort_pokemon(order, user_id = None):
+#     """Input a keyword for how pokemon should be ordered: 'dex number', 'alphabetical'; and a user_id if applicable. Add addi"""
 
 
 

@@ -1,4 +1,10 @@
 const BASE_URL = 'http://localhost:5000'
+// let choices = []
+
+
+// function seedChoices() {
+
+// }
 
 
 // Used to submit user's attempt to catch a pokemon
@@ -165,8 +171,6 @@ $(".select-mon").on("click", async function (evt) {
 			let id = $(this).attr("data-userpkmn-id")
 			id_list.push(parseInt(id))
 		})
-
-		// let id_exists = $(`.edit-card`).find(`b:contains('ID: #${pkmn_id}')`)
 		
 			if (id_list.includes(parseInt(pkmn_id)) ) {
 				return
@@ -175,7 +179,7 @@ $(".select-mon").on("click", async function (evt) {
 			// Otherwise, display new pokemon on screen.
 			else {
 				
-				// Tell python slots are not being swapped
+				// Tell python slots are not being swapped. Swaps only happen on .select-slot buttons
 				let slot2 = "None" 
 				let pkmn2_id = "None" 
 
@@ -228,11 +232,6 @@ $(".delete-slot").on("click", async function (evt) {
 	})
 
 	
-			
-	// let resp = await axios.post(`${BASE_URL}/card/edit/${user_id}/delete`, {
-	// 	slot,
-	// 	pkmn_id,
-	// });
 	img = $target.parent().find(".pokemon-image");
 	nickname = $target.parent().find(".nickname");
 	species = $target.parent().find(".species");

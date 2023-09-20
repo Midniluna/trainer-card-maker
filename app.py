@@ -239,6 +239,7 @@ def edit_card(userid):
 
         return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
     
+    
 @app.route('/card/edit/<int:userid>/submit', methods=["PATCH", "POST"])
 def handle_card_edit(userid):
     """Handle's ajax request to for modifying a pokemon"""
@@ -270,6 +271,7 @@ def handle_card_edit(userid):
 
         return jsonify(userpkmn.serialize_userpkmn())
 
+
 @app.route('/card/edit/<int:userid>/delete', methods=["POST"])
 def handle_card_delete(userid):
     """Handle's ajax request to remove a pokemon from their card"""
@@ -284,6 +286,7 @@ def handle_card_delete(userid):
     
     return "Success!"
 
+
 @app.route('/<int:userpkmn_id>/pokemon/edit')
 def edit_pokemon(userpkmn_id):
     """Allow user to customize their pokemon"""
@@ -297,20 +300,37 @@ def edit_pokemon(userpkmn_id):
 
 
 
-# This is how to turn data into jsonify-able data for javascript
 
-# def serialize(self):
-#         return {
-#             "id" : self.id,
-#             "flavor" : self.flavor,
-#             "size" : self.size,
-#             "rating" : self.rating,
-#             "image" : self.image
-#     }
 
-# then return
-# serialized = userpkmn_data.serialize()
-# return (jsonify(userpkmn = serialized)
+
+
+def check_can_gen():
+
+    t = datetime.datetime.today()
+    today = t.strftime('%m/%d/%Y')
+
+    # If the user has neither caught a pokemon nor generated a pokemon today, return true
+    if g.user.last_genned != today and g.user.last_catch != today:
+        return True
+
+    # If user has already caught a pokemon today, reject request to generate pokemon
+    elif g.user.last_catch == today:
+        return False
+    
+    # If user hasn't caught a pokemon today but has generated a pokemon today, return the uncaught pokemon to allow user to reattempt to catch it
+    elif g.user.last_genned == today:
+        genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
+        return genned
+    
+
+
+
+
+
+
+
+
+
 
 # Click slot. Make button active. Click chosen pokemon. collect slot data from active button, collect userpkmn id from chosen pokemon, send data to card editing route. Update card slot on database, return data needed to manipulate DOM (sprite, id, species, nickname)
 
@@ -345,22 +365,3 @@ def edit_pokemon(userpkmn_id):
 #     data = r.json()
 
 
-
-def check_can_gen():
-
-    t = datetime.datetime.today()
-    today = t.strftime('%m/%d/%Y')
-
-    # If the user has neither caught a pokemon nor generated a pokemon today, return true
-    if g.user.last_genned != today and g.user.last_catch != today:
-        return True
-
-    # If user has already caught a pokemon today, reject request to generate pokemon
-    elif g.user.last_catch == today:
-        return False
-    
-    # If user hasn't caught a pokemon today but has generated a pokemon today, return the uncaught pokemon to allow user to reattempt to catch it
-    elif g.user.last_genned == today:
-        genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
-        return genned
-    

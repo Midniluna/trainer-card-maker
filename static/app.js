@@ -124,12 +124,14 @@ $(".select-slot").on("click", async function (evt) {
 			$nickname.text(swapnickname2);
 			$species.text(swapspecies2);
 			$id.text(swapid2)
+			$active.attr("data-userpkmn-id", pkmn2_id)
 
 			// Now fill second slot's data with data from first slot
 			$img2.attr("src", swapimg);
 			$nickname2.text(swapnickname);
 			$species2.text(swapspecies);
 			$id2.text(swapid)
+			$target.attr("data-userpkmn-id", pkmn_id)
 
 			$active.toggleClass("active");
 		}
@@ -156,10 +158,17 @@ $(".select-mon").on("click", async function (evt) {
 		let user_id = $(".card-container").attr("data-user-id")
 		
 		
-		// If pokemon ID is already in displayed card, ignore.
-		let id_exists = $(`.edit-card`).find(`b:contains('ID: #${pkmn_id}')`)
+		// Check through list of userpkmn ids currently in card and confirm selected pokemon's id is not a perfect match to any of them
+		let id_list = []
+
+		$(".select-slot").each(function() {
+			let id = $(this).attr("data-userpkmn-id")
+			id_list.push(parseInt(id))
+		})
+
+		// let id_exists = $(`.edit-card`).find(`b:contains('ID: #${pkmn_id}')`)
 		
-			if (id_exists.length > 0 ) {
+			if (id_list.includes(parseInt(pkmn_id)) ) {
 				return
 			}
 			
@@ -193,6 +202,7 @@ $(".select-mon").on("click", async function (evt) {
 				nickname.text(`${resp.data.nickname}`);
 				species.text(`${resp.data.species}`);
 				id.text(`ID: #${pkmn_id}`);
+				$active.attr("data-userpkmn-id", pkmn_id)
 
 				$active.toggleClass("active")
 
@@ -232,6 +242,7 @@ $(".delete-slot").on("click", async function (evt) {
 	nickname.text("(nickname)");
 	species.text("No pokemon");
 	id.text(`ID: Null`);
+	$target.attr("data-userpkmn-id", "")
 
 	$(this).remove()
 })

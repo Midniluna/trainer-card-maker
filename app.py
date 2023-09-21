@@ -218,7 +218,7 @@ def view_profile(userid):
     card = Card.query.filter(Card.user_id == userid).one()
     slotted = card.return_slotted()
 
-    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon.all(),slotted = slotted)
+    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon,slotted = slotted)
 
 @app.route('/card/edit/<int:userid>')
 def edit_card(userid):
@@ -233,7 +233,7 @@ def edit_card(userid):
         slotted = card.return_slotted()
         
 
-        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon.all(), slotted = slotted, edit = True)
+        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
     
     
 @app.route('/card/edit/<int:userid>/submit', methods=["PATCH", "POST"])
@@ -288,7 +288,7 @@ def edit_pokemon(userpkmn_id):
     """Allow user to customize their pokemon"""
     
     pokemon = UserPkmn.query.get(userpkmn_id)
-    if pokemon not in g.user.pokemon.all():
+    if pokemon not in g.user.pokemon:
         print("YOU DON'T OWN THIS POKEMON!")
         print("Continue this later. Idk if this is gonna return the way I want it to so I've gotta inspect that a little later")
         return

@@ -21,19 +21,6 @@ API_BASE = "https://pokeapi.co/api/v2/"
 CURR_GENNED_KEY = "curr_genned"
 
 
-
-
-def serialize_userpkmn(obj):
-    return {
-        "sprite" : obj.sprite,
-        "userpkmn_id" : obj.id,
-        "species" : obj.species,
-        "nickname" : obj.nickname
-    }
-
-
-
-
 class Pokemon(db.Model):
     """Collection of basic info about all pokemon in the known pokedex"""
 

@@ -10,7 +10,8 @@
 	<h1>{{(user.username).capitalize()}}'s Trainer Card</h1>
 
 	<!-- TRAINER CARD GOES HERE -->
-	{% if g.user.id != user.id %} {% include '/cards/view-card.html'%} {% else %} {% include '/cards/your-trainer-card.html'%} 
+	{% include '/cards/user-card.html'%} 
+	{% if g.user and g.user.id == user.id %} 
 	<a href="/card/edit/{{user.id}}" class="btn btn-success">Edit Card</a> 
 	{% endif %}
 	<hr />

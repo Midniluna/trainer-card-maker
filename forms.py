@@ -3,7 +3,20 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, PasswordField, TextAreaField
 from wtforms.validators import InputRequired, Email, Length, Optional
 
+from sqlalchemy import asc
+
 from IPython import embed
+
+# def gen_choices():
+#     """Generate choices for selectfield where key = pokemon species dexnum + name and value = that pokemon's ID"""
+#     all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+#     choices = []
+#     for pokemon in all_pokemon:
+#         choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))
+#     return choices
+        
+
+
 
 class SignupForm(FlaskForm):
     """User signup form"""
@@ -29,3 +42,4 @@ class PokemonSelectForm(FlaskForm):
     """Form for selecting pokemon"""
 
     pokemon = SelectField('Select Pokemon', choices=[])
+    nickname = StringField('Enter Nickname', render_kw={"placeholder" : "Nickname (Optional)"})

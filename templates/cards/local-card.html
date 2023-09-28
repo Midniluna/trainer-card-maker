@@ -1,0 +1,48 @@
+{% extends 'base.html' %} {% block content %} 
+<!-- This card viewer is for anonymous/not logged users -->
+<div class="card-container" style="text-align: center; width: 600px;">
+	<!-- IF card slot data is in localstorage, enter it here. -->
+	<!-- {% if slotted %}
+	{% for slot in slotted %} {% if slotted.get(slot) %}
+	<div class="pokemon-container">
+		{% if slotted.get(slot).nickname %}
+		<span style="display: block" class="nickname">{{slotted.get(slot).nickname}}</span>
+		{% endif %}
+		<img src="{{slotted.get(slot).sprite}}" alt="" class="pokemon-image" />
+		<span style="display: block"
+		>{{slotted.get(slot).pokemon.species.capitalize()}}</span
+		>
+	</div>
+	{% else %}
+	<div class="pokemon-container">
+		<span class="nickname">(nickname)</span>
+		<img
+		src="{{url_for('static', filename='images/no-symbol.png')}}"
+		alt=""
+		class="pokemon-image"
+		/>
+		<span style="display: block">No pokemon</span>
+	</div>
+	{% endif %} {% endfor %} -->
+	<!-- HOWEVER if there is NO data in the localstorage, simply show an empty card -->
+	<!-- {% else %} -->
+	{% for num in loop %}
+	<div class="pokemon-container" style="text-align: center; margin: 0px; padding-bottom: 10px; max-width: 200px;" data-slot-index="slot{{num}}" data-pokemon-url="">
+		<span class="nickname" style="display: block;"></span>
+		<img
+		src="{{url_for('static', filename='images/no-symbol.png')}}"
+		alt=""
+		class="pokemon-image"
+		/>
+		<span style="display: block">No pokemon</span>
+		{% include '/cards/pokemon-list-form.html' %}
+	</div>
+	{% endfor %}
+	<!-- {% endif %} -->
+	<small>*note: Pokemon are sorted by national pokedex number, not by regional pokedex. (So Johtoian Raichu and Alolan Raichu will both be under all Gen 2 pokemon, Unovan Zorua and Hisuian Zorua will be under Gen 5 pokemon, etc)</small>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='local-card.js')}}"></script>
+{% endblock %}

@@ -1,5 +1,6 @@
+<!-- This card viewer is for logged-in users or for viewing cards for other logged-in users -->
 <div class="card-container" data-user-id="{{user.id}}">
-	<!-- data-userpkmn-id="pokemon id goes here" -->
+	<!-- "slotted" is an object with slot ids as keys and UserPkmn objects as associated values -->
 	{% for slot in slotted %} {% if slotted.get(slot) %}
 	<div class="pokemon-container">
 		{% if slotted.get(slot).nickname %}
@@ -9,8 +10,11 @@
 		<span style="display: block" class="species"
 		>{{slotted.get(slot).pokemon.species.capitalize()}}</span
 		>
+		<!-- Only allow editing + viewing of pokemon's id if global user id matches card user's id -->
+		{% if g.user and g.user.id == user.id %} 
 		<small style="font-size: 12px;"><b>ID: #{{slotted.get(slot).id}}</b></small>
 		<span style="display: block;"><a href="#" class="edit-mon">Edit</a></span>
+		{% endif %}
 	</div>
 	{% else %}
 	<div class="pokemon-container">
@@ -20,7 +24,9 @@
 		class="pokemon-image"
 		/>
 		<span style="display: block" class="species">No pokemon</span>
+		{% if g.user and g.user.id == user.id %} 
 		<small style="font-size: 12px;" class="pkmnID"><b>ID: Null</b></small>
+		{% endif %}
 	</div>
 	{% endif %} {% endfor %}
 </div>

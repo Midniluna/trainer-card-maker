@@ -66,6 +66,15 @@ form {
 	font-weight: bold;
 }
 
+.pokemon-list-form p{
+	margin-bottom: 5px;
+}
+
+.pokemon-list-form p select, 
+.pokemon-list-form p input {
+	max-width: 80%;
+}
+
 /* I did this because the DebugToolbar was in the way of the profile tab of the navbar, very annoying */
 #flDebug #flDebugToolbarHandle {
 	top: 60px !important;

@@ -13,8 +13,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 from IPython import embed
 
 # from forms import 
-from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY, serialize_userpkmn
-from forms import SignupForm, LoginForm, GuessPokemon
+from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
+from forms import SignupForm, LoginForm, GuessPokemon, PokemonSelectForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -144,7 +144,28 @@ def logout():
 
     return redirect('/home')
 
+@app.route('/get-choices')
+def get_choices():
+    """Route to tell PokemonSelectForm what pokemon choices are available via javascript ajax"""
+
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+    choices = []
+    for pokemon in all_pokemon:
+        choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))
+
             
+@app.route('/new-card', methods=["GET", "POST"])
+def new_card():
+    """Allow user (logged-in or anon) to create a basic card that will be saved to the localstorage"""
+
+    form = PokemonSelectForm()
+
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+    form.pokemon.choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
+
+    loop = [num for num in range(1,7)]
+
+    return render_template('cards/local-card.html', form = form, loop = loop)
 
 
 @app.route('/generate')
@@ -162,12 +183,12 @@ def gen_pokemon():
 
     # User has already caught a pokemon today
     if can_gen == False:
-        flash("You've already caught a pokemon today!")
+        flash("You've already caught a pokemon today!", 'error')
         return redirect('/home')
     
     # User has generated a pokemon today but has not caught it
     elif isinstance(can_gen, UserPkmn):
-        flash("You have already generated a pokemon today! You may re-attempt to catch it.")
+        flash("You have already generated a pokemon today! You may re-attempt to catch it.", 'error')
         can_gen = UserPkmn.query.get(session["curr_genned"])
         species = Pokemon.query.get(can_gen.pokemon_id).species
 
@@ -214,17 +235,20 @@ def view_profile(userid):
     #     flash('Unauthorized action.', 'danger')
     #     return redirect('/home')
 
-    # else:
+    # is_user = False
+    # if g.user and g.user.id == userid:
+    #     is_user = True
+    
     card = Card.query.filter(Card.user_id == userid).one()
     slotted = card.return_slotted()
 
-    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon,slotted = slotted)
+    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
 
 @app.route('/card/edit/<int:userid>')
 def edit_card(userid):
     """Allow user to modify their card to their liking"""
 
-    if g.user.id != userid:
+    if  not g.user or g.user.id != userid:
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
 

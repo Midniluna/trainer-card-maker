@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block content %} 
 <!-- THIS segment shows what your card will look like in the end -->
-<div style="text-align: center">{% include '/cards/your-trainer-card.html' %}</div>
+<div style="text-align: center">{% include '/cards/user-card.html' %}</div>
 <h4 style="text-align: center; color:rgb(162, 191, 219)">Reload to view updated card</h3>
 
 <hr>
@@ -25,7 +25,7 @@
             <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot_pos).id}}" data-slot-id="{{slot_pos}}">Select Slot</button>
             <button class="btn btn-danger delete-slot" data-slot-id="{{slot_pos}}">Remove</button>
         </div>
-<!-- data-userpkmn-id="pokemon id goes here" -->
+        
         <!-- Else, insert default data -->
         {% else %}
         <div class="pokemon-container">

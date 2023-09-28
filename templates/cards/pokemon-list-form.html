@@ -1,0 +1,10 @@
+<form action="#" class="pokemon-list-form" style="margin-left: auto; margin-right: auto; max-width: none;">
+    {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+    'hidden' %}
+    <p>
+        {{field}} {% for error in field.errors
+        %} {{error}} {% endfor %}
+    </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+</form>

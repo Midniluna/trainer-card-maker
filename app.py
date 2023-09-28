@@ -14,7 +14,7 @@ from IPython import embed
 
 # from forms import 
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
-from forms import SignupForm, LoginForm, GuessPokemon, PokemonSelectForm
+from forms import SignupForm, LoginForm, GuessPokemon, PokemonSelectForm, PokemonSearchForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -158,14 +158,15 @@ def get_choices():
 def new_card():
     """Allow user (logged-in or anon) to create a basic card that will be saved to the localstorage"""
 
-    form = PokemonSelectForm()
+    selectform = PokemonSelectForm()
+    searchform = PokemonSearchForm()
 
     all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
-    form.pokemon.choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
+    selectform.pokemon.choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
 
     loop = [num for num in range(1,7)]
 
-    return render_template('cards/local-card.html', form = form, loop = loop)
+    return render_template('cards/local-card.html', form = selectform, searchform = searchform, loop = loop)
 
 
 @app.route('/generate')

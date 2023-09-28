@@ -5,18 +5,12 @@ $slot4 = $(".pokemon-container[data-slot-index='slot4']")
 $slot5 = $(".pokemon-container[data-slot-index='slot5']")
 $slot6 = $(".pokemon-container[data-slot-index='slot6']")
 
-// I could call to the SQL database, but I want to show that I'm able to do API calls as well. Perhaps less efficient? Can adjust to SQL calls later
-$(".pokemon-list-form").on("submit", async function (evt) {
-    evt.preventDefault();
-    $target = $(this).parent();
-    console.log($target);
+const SLOTLIST = ['slot1', 'slot2' ,'slot3', 'slot4', 'slot5', 'slot6']
 
-    localCard = undefined
-
-    if (window.localStorage.getItem('localCard') != null) {
-        localCard = JSON.parse(localStorage.getItem('localCard'));
-        // It works
-        console.log(`Slot 1 contents: ${localCard.slot1}`)
+function initiateLocalcard() {
+    // if localCard does not exist in localstorage, make it.
+    if (window.localStorage.getItem('localCard') !== null) {
+        return;
     } else {
         new_card = {
             slot1 : "",
@@ -26,22 +20,104 @@ $(".pokemon-list-form").on("submit", async function (evt) {
             slot5 : "",
             slot6 : "",
         }
-        localCard = localStorage.setItem('localCard', JSON.stringify(new_card));
+        window.localStorage.setItem('localCard', JSON.stringify(new_card));
+    };
+}
+
+initiateLocalcard();
+
+
+for (let i = 0; i < SLOTLIST.length; i++) {
+    // Iterate over pokemon stored in localCard and apply existing pokemon onto DOM
+
+    let slotKey = SLOTLIST[i]
+    let $targetDiv = $(`div[data-slot-index='${slotKey}']`)
+    let cardObj = JSON.parse(window.localStorage.getItem('localCard'))
+
+    if (cardObj[slotKey] !== "") {
+        let url = cardObj[slotKey]["url"]
+        let nickname = cardObj[slotKey]["nickname"]
+        let sprite = cardObj[slotKey]["sprite"]
+        let species = cardObj[slotKey]["species"]
+
+        if (nickname !== "") {
+            $targetDiv.find(".nickname").text(nickname)
+        }
+        else {
+            $targetDiv.find(".nickname").text("----")
+        }
+
+        $targetDiv.find("img").attr("src", sprite)
+        $targetDiv.find(".species").text(species)
+        $targetDiv.attr("data-pokemon-url", url)
+
+        // we also want to default the input values to match the provided pokemons' values
+        $targetDiv.find("select").val(url);
+        $targetDiv.find("#nickname").val(nickname);
+    } 
+    // If pokemon doesn't exist in given slot, ignore it
+}
+
+
+
+// ------------------------------------------
+
+
+
+
+// I want the localstorage to look like this (url acts like an id): 
+// { 'slot1' : 
+    // { 'url' : 'https:pokeapi.co/api/v2/pokemon/id',
+    //   'sprite' : 'something.png',
+    //   'species' : 'species',
+    //   'nickname' : 'Nickname'
+    // } ,
+    // 'slot2' : etc
+// }
+
+// I could call to the SQL database, but I want to show that I'm able to do API calls as well. Perhaps less efficient? Can adjust to SQL calls later
+$(".pokemon-list-form").on("submit", async function (evt) {
+    evt.preventDefault();
+    const $TARGET = $(this).parent();
+    // console.log($TARGET);
+    
+    let cardObj = JSON.parse(window.localStorage.getItem('localCard'))
+    
+    let selection = $TARGET.find("select").val();
+
+    let response = await axios.get(selection);
+
+    let slot = $TARGET.attr("data-slot-index");
+    let nickname = $TARGET.find("#nickname").val();
+    let pokemon = response.data.name
+    let sprite = response.data.sprites.front_default
+    
+    cardObj[slot] = {
+        "url" : selection,
+        "sprite" : sprite,
+        "species" : pokemon,
+        "nickname" : nickname
+    };
+    
+    window.localStorage.setItem('localCard', JSON.stringify(cardObj));
+
+    $TARGET.find("img").attr("src", sprite)
+    $TARGET.find(".species").text(pokemon)
+    $TARGET.attr("data-pokemon-url", selection)
+
+    if (nickname !== "") {
+        $TARGET.find(".nickname").text(nickname)
     }
+    else {
+        $TARGET.find(".nickname").text("----")
+    }
+})
 
-    // Making sure all values are returning as expected
-    slot = $target.attr("data-slot-index");
-    console.log(slot);
-    pkmnURL = $target.attr("data-pokemon-url");
-    console.log(pkmnURL);
-    value = $target.find("select").val();
-    console.log(value);
 
-    let response = await axios.get(value);
-
-    pokemon = response.data.name
-    sprite = response.data.sprites.front_default
-    console.log(pokemon)
-    console.log(sprite)
+$(".pokemon-search-form").on("input", async function (evt) {
+    evt.preventDefault();
 
 })
+
+// Reminder to self; [x or None] in python is the same as 
+//                   [x ? x : null] in js

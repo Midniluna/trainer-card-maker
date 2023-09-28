@@ -1,10 +1,4 @@
 const BASE_URL = 'http://localhost:5000'
-// let choices = []
-
-
-// function seedChoices() {
-
-// }
 
 
 // Used to submit user's attempt to catch a pokemon

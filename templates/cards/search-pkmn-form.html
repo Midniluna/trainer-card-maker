@@ -1,0 +1,10 @@
+<form action="#" class="pokemon-search-form" style="max-width: 100%;">
+    {{ searchform.hidden_tag() }} {% for field in searchform if field.widget.input_type !=
+    'hidden' %}
+    <p>
+        {{field.label}} {{field(class="form-control")}}  {% for error in field.errors
+        %} {{error}} {% endfor %}
+    </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-sm btn-primary">Search</button>
+</form>

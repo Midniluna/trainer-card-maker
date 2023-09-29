@@ -169,6 +169,25 @@ def new_card():
     return render_template('cards/local-card.html', form = selectform, searchform = searchform, loop = loop)
 
 
+# AGH. stuck here
+
+@app.route('/search-pokemon', methods=["GET", "PATCH"])
+def search_mon():
+    """Allow users to search for a given pokemon"""
+    embed()
+    input = request.json["input"]
+    
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).where(Pokemon.variant_name.like(f'%{input}%')).all()
+
+    response_obj = {}
+
+    for pokemon in all_pokemon:
+        # for ex: {'pikachu' : {'dexnum' : #0025} }
+        response_obj[pokemon.variant_name] = {'dexnum' : pokemon.dexnum, 'sprite' : pokemon.sprite}
+
+    return jsonify(response_obj)
+
+
 @app.route('/generate')
 # @login_required
 def gen_pokemon():

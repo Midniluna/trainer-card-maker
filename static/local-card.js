@@ -114,8 +114,32 @@ $(".pokemon-list-form").on("submit", async function (evt) {
 })
 
 
-$(".pokemon-search-form").on("input", async function (evt) {
+$(".pokemon-search-form").on("submit", async function (evt) {
     evt.preventDefault();
+    const $TARGET = $(this).find("#search");
+    const $APPENDRESULTS = $(".search-results")
+    let input = $TARGET.val()
+    console.log(input)
+    $APPENDRESULTS.empty()
+
+    let response = await axios.get(`${BASE_URL}/search-pokemon`, {
+        input
+    });
+    
+    for (let [name, dataObj] in response.data) {
+        let dexnum = dataObj["dexnum"]
+        let sprite = dataObj["sprite"]
+        $APPENDRESULTS.append(`
+        <div class="pokemon-container">
+		<img
+		src="${sprite}"
+		alt=""
+		class="pokemon-image"
+		/>
+		<span style="display: block">Name: ${name}</span>
+		<span style="display: block">Dex number: ${dexnum}</span>
+        `)
+    }
 
 })
 

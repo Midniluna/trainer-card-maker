@@ -17,7 +17,8 @@ form {
 }
 
 .user-pokemon-container,
-.card-container {
+.card-container,
+.search-results {
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 40px;
@@ -51,6 +52,7 @@ form {
 	max-width: 100px;
 	margin-left: 20px;
 	margin-right: 20px;
+	text-align: center;
 }
 
 .pokemon-image {
@@ -58,8 +60,12 @@ form {
 	height: 100px;
 }
 
+.search {
+	min-width: 150px;
+}
 .edit-mon {
 	font-size: 12px;
+	display: block;
 }
 
 .in-card {

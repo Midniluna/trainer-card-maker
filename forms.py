@@ -7,16 +7,6 @@ from sqlalchemy import asc
 
 from IPython import embed
 
-# def gen_choices():
-#     """Generate choices for selectfield where key = pokemon species dexnum + name and value = that pokemon's ID"""
-#     all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
-#     choices = []
-#     for pokemon in all_pokemon:
-#         choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))
-#     return choices
-        
-
-
 
 class SignupForm(FlaskForm):
     """User signup form"""
@@ -30,16 +20,21 @@ class LoginForm(FlaskForm):
     username = StringField('Enter Username', validators=[InputRequired()])
     password = PasswordField('Enter password', validators=[InputRequired()])
 
-class GuessPokemon(FlaskForm):
+
+
+class GuessPokemonForm(FlaskForm):
     """Form for guessing generated pokemon"""
     species = StringField("Who's that pokemon?", validators=[InputRequired(message="Please enter a valid pokemon")])
 
-class PokemonSelectForm(FlaskForm):
-    """Form for selecting pokemon"""
+class EditUserPkmnForm(FlaskForm):
+    nickname = StringField('Enter Nickname', validators=[Length(max=12)], render_kw={"placeholder" : "Nickname (Optional)"})
 
+
+class PokemonSelectForm(FlaskForm):
+    """Form for selecting + nicknaming pokemon from list"""
     pokemon = SelectField('Select Pokemon', choices=[])
-    nickname = StringField('Enter Nickname', render_kw={"placeholder" : "Nickname (Optional)"})
+    nickname = StringField('Enter Nickname', validators=[Length(max=12)], render_kw={"placeholder" : "Nickname (Optional)"})
 
 class PokemonSearchForm(FlaskForm):
     """Form to allow users to search for pokemon by name"""
-    search = StringField("Enter Pokemon name")
+    search = StringField("Enter Pokemon name:")

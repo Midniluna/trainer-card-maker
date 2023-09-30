@@ -4,22 +4,21 @@
 <div style="text-align: center;">
     <img src="static/images/pika.png" alt="Pikachu official art" class="home-pika" style="margin: auto; display: block;">
     <h1>Welcome to the Pokepals homepage!</h1>
-    {% if not g.user %}
+    <hr>
+    {% if g.user %}
+    <h3>Generate your daily pokemon?</h3>
+    <br>
+    <a href="/generate" class="btn btn-lg btn-primary" style="margin-bottom: 20px;">Generate</a>
+    {% else %}
     <h3>Please login or create an account</h2>
+    <br>
+    {% endif %}
     <br>
     <h1>OR</h1>
     <br>
     <h3>Create your Trainer Card</h3>
     <br>
-    <h5>(you still cant do this yet sorryfsdhgsdg)</h5>
-    <h5>(you also can't do anything with the little blue "edit" button under your pokemon but that's coming next I pawmise)</h5>
-    <a href="#" class="btn btn-lg btn-primary">START</a>
-    {% else %}
-    <hr>
-    <h3>Generate your daily pokemon?</h3>
-    <br>
-    <a href="/generate" class="btn btn-lg btn-primary">Generate</a>
-    {% endif %}
+    <a href="/new-card" class="btn btn-lg btn-primary">START</a>
 </div>
 
 {% endblock %}

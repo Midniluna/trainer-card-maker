@@ -3,17 +3,20 @@
 	<!-- "slotted" is an object with slot ids as keys and UserPkmn objects as associated values -->
 	{% for slot in slotted %} {% if slotted.get(slot) %}
 	<div class="pokemon-container">
-		{% if slotted.get(slot).nickname %}
-		<span style="display: block">{{slotted.get(slot).nickname}}</span>
-		{% endif %}
 		<img src="{{slotted.get(slot).sprite}}" alt="" class="pokemon-image" />
 		<span style="display: block" class="species"
-		>{{slotted.get(slot).pokemon.species.capitalize()}}</span
+		>
+		{% if slotted.get(slot).nickname %}
+		<b>{{slotted.get(slot).nickname}}</b>
+		{% else %}
+		{{slotted.get(slot).pokemon.species.capitalize()}}
+		{% endif %}
+		</span
 		>
 		<!-- Only allow editing + viewing of pokemon's id if global user id matches card user's id -->
 		{% if g.user and g.user.id == user.id %} 
 		<small style="font-size: 12px;"><b>ID: #{{slotted.get(slot).id}}</b></small>
-		<span style="display: block;"><a href="#" class="edit-mon">Edit</a></span>
+		<span style="display: block;"><a href="{{url_for('edit_pokemon', user_id = user.id, userpkmn_id = slotted.get(slot).id)}}" class="edit-mon">Edit</a></span>
 		{% endif %}
 	</div>
 	{% else %}

@@ -16,12 +16,17 @@
 	style="text-align: center"
 	data-genned-id="{{genned.id}}"
 >
-	<img
+	<div style="margin: auto; display: block">
+		<p style="display: inline-block">✨</p>
+		<img
 		src="{{genned.sprite}}"
 		alt="Generated Pokemon"
-		style="margin: auto; display: block"
-	/>
-	<h4>{{species}}</h4>
+		style="margin: auto; display: inline-block"
+		/>
+		<p style="display: inline-block">✨</p>
+	</div>
+	<!-- Comment out this part to hide the pokemon name if you want to challenge yourself -->
+	<!-- <h4>{{species}}</h4> -->
 	<hr />
 	<div
 		class="genned-mon-content"
@@ -48,8 +53,10 @@
 			{% endfor %}
 			<button type="submit" class="btn btn-primary">Submit</button>
 		</form>
-
-		<a href="/generate" class="btn btn-lg">Reset</a>
+		<br>
+		<form action="/reset" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">
+			<button class="btn">Reset</button>
+		</form>
 	</div>
 </div>
 <div

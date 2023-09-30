@@ -56,6 +56,13 @@ for (let i = 0; i < SLOTLIST.length; i++) {
         $targetDiv.find("#nickname").val(nickname);
     } 
     // If pokemon doesn't exist in given slot, ignore it
+    // Correction: make sure it appends the default image
+    else {
+        $targetDiv.find("img").attr("src", "/static/images/no-symbol.png")
+        $targetDiv.find(".species").text("No pokemon")
+        $targetDiv.find(".nickname").text("----")
+        $targetDiv.find("#nickname").val("")
+    }
 }
 
 
@@ -79,39 +86,59 @@ for (let i = 0; i < SLOTLIST.length; i++) {
 $(".pokemon-list-form").on("submit", async function (evt) {
     evt.preventDefault();
     const $TARGET = $(this).parent();
-    // console.log($TARGET);
     
-    let cardObj = JSON.parse(window.localStorage.getItem('localCard'))
+    
+    let cardObj = JSON.parse(window.localStorage.getItem('localCard'));
     
     let selection = $TARGET.find("select").val();
-
-    let response = await axios.get(selection);
-
     let slot = $TARGET.attr("data-slot-index");
-    let nickname = $TARGET.find("#nickname").val();
-    let pokemon = response.data.name
-    let sprite = response.data.sprites.front_default
     
-    cardObj[slot] = {
-        "url" : selection,
-        "sprite" : sprite,
-        "species" : pokemon,
-        "nickname" : nickname
-    };
-    
-    window.localStorage.setItem('localCard', JSON.stringify(cardObj));
+    // If they select the "NONE" pokemon, clear all data for that slot
 
-    $TARGET.find("img").attr("src", sprite)
-    $TARGET.find(".species").text(pokemon)
-    $TARGET.attr("data-pokemon-url", selection)
+    if (selection == "") {
+        // clear data from slot in localstorage
+        cardObj[slot] = "";
+        window.localStorage.setItem('localCard', JSON.stringify(cardObj));
+        // then reset slot to default on DOM
+        $TARGET.find("img").attr("src", "/static/images/no-symbol.png");
+        $TARGET.find(".species").text("No pokemon")
+        $TARGET.attr("data-pokemon-url", "");
+        $TARGET.find(".nickname").text("----");
+        $TARGET.find("#nickname").val("");
+        return;
+    } 
 
-    if (nickname !== "") {
-        $TARGET.find(".nickname").text(nickname)
-    }
+    // Otherwise, append selected pokemon to DOM
     else {
-        $TARGET.find(".nickname").text("----")
+        let response = await axios.get(selection);
+        
+        let nickname = $TARGET.find("#nickname").val();
+        let pokemon = response.data.name;
+        let sprite = response.data.sprites.front_default;
+        
+        cardObj[slot] = {
+            "url" : selection,
+            "sprite" : sprite,
+            "species" : pokemon,
+            "nickname" : nickname
+        };
+        
+        window.localStorage.setItem('localCard', JSON.stringify(cardObj));
+    
+        $TARGET.find("img").attr("src", sprite);
+        $TARGET.find(".species").text(pokemon);
+        $TARGET.attr("data-pokemon-url", selection);
+    
+        if (nickname !== "") {
+            $TARGET.find(".nickname").text(nickname);
+        }
+        else {
+            $TARGET.find(".nickname").text("----");
+        }
     }
+    
 })
+
 
 
 $(".pokemon-search-form").on("submit", async function (evt) {
@@ -122,25 +149,27 @@ $(".pokemon-search-form").on("submit", async function (evt) {
     console.log(input)
     $APPENDRESULTS.empty()
 
-    let response = await axios.get(`${BASE_URL}/search-pokemon`, {
+    let response = await axios.post(`${BASE_URL}/search-pokemon`, {
         input
     });
-    
-    for (let [name, dataObj] in response.data) {
-        let dexnum = dataObj["dexnum"]
-        let sprite = dataObj["sprite"]
+
+    result_pkmn = response.data
+    pkmn_names = Object.keys(result_pkmn)
+
+    pkmn_names.forEach((pokemon) => {
+        let dexnum = result_pkmn[pokemon]["dexnum"]
+        let sprite = result_pkmn[pokemon]["sprite"]
         $APPENDRESULTS.append(`
-        <div class="pokemon-container">
+        <div class="pokemon-container search" style="text-align: center;">
 		<img
 		src="${sprite}"
 		alt=""
 		class="pokemon-image"
 		/>
-		<span style="display: block">Name: ${name}</span>
-		<span style="display: block">Dex number: ${dexnum}</span>
+		<span style="display: block"><b>Name:</b> ${pokemon}</span>
+		<span style="display: block"><b>Dex number</b>: #${dexnum}</span>
         `)
-    }
-
+    });
 })
 
 // Reminder to self; [x or None] in python is the same as 

@@ -23,7 +23,7 @@
             >
             <small style="font-size: 12px;"><b class="pkmnID" >ID: #{{slotted.get(slot_pos).id}}</b></small>
             <button class="btn btn-primary select-slot" data-userpkmn-id="{{slotted.get(slot_pos).id}}" data-slot-id="{{slot_pos}}">Select Slot</button>
-            <button class="btn btn-danger delete-slot" data-slot-id="{{slot_pos}}">Remove</button>
+            <span class="delete-slot" data-slot-id="{{slot_pos}}"><button class="btn btn-danger">Remove</button></span>
         </div>
         
         <!-- Else, insert default data -->

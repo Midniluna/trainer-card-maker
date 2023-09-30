@@ -189,11 +189,12 @@ $(".select-mon").on("click", async function (evt) {
 				id = $active.parent().find(".pkmnID");
 
 				// Append delete button if adding a pokemon into a blank slot
-				let $delete_btn = $(`<button class="btn btn-danger delete-slot" data-slot-id="${slot}">Remove</button>`)
+				let $delete_btn = $(`<button class="btn btn-danger" data-slot-id="${slot}">Remove</button>`)
 
 				// If there's 
 				if (species.text() == "No pokemon") {
-					$delete_btn.insertAfter($active);
+					$active.parent().find("span.delete-slot").append($delete_btn);
+					// $delete_btn.insertAfter($active);
 				}
 	
 				img.attr("src", resp.data.sprite);
@@ -220,6 +221,8 @@ $(".delete-slot").on("click", async function (evt) {
 	
 	let slot_id = $target.attr("data-slot-id")
 	let user_id = $(".card-container").attr("data-user-id")
+	console.log("Heard")
+	console.log(slot_id)
 
 	await axios.post(`${BASE_URL}/card/edit/${user_id}/delete`, {
 			slot_id
@@ -237,5 +240,5 @@ $(".delete-slot").on("click", async function (evt) {
 	id.text(`ID: Null`);
 	$target.attr("data-userpkmn-id", "")
 
-	$(this).remove()
+	$(this).find(".btn-danger").remove()
 })

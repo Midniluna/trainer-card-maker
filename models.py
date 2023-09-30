@@ -148,20 +148,24 @@ class UserPkmn(db.Model):
         # print(f"Does shiny sprite exist? : {bool(pokemon.shiny_sprite)}")
         # ^ show whether or not there's a shiny sprite
 
-            ###################### UNCOMMENT THIS SECTION FOR TESTING ######################
-                    # edit: actually I honestly don't need to uncomment it at all
+        ###################### UNCOMMENT THIS SECTION FOR TESTING ######################
+                # edit: actually I honestly don't need to uncomment it at all, I
                     
         # if "shine" input is true/exists, guarantee genned pokemon is shiny unless there is no shiny sprite. This section is solely for testing purposes
 
         if shine:
             if pokemon.shiny_sprite is not None:
                 sprite = pokemon.shiny_sprite
-                return UserPkmn(is_shiny = True, sprite = sprite, pokemon_id = pokemon.id)
+                genned = UserPkmn(is_shiny = True, sprite = sprite, pokemon_id = pokemon.id)
             else:
                 sprite = pokemon.sprite
-                return UserPkmn(is_shiny = False, sprite = sprite, pokemon_id = pokemon.id)
+                genned = UserPkmn(is_shiny = False, sprite = sprite, pokemon_id = pokemon.id)
 
-            #####################################################################################
+            db.session.add(genned)
+            db.session.commit()
+            return genned
+
+        #####################################################################################
             
 
         if pokemon.shiny_sprite is not None and is_shiny:

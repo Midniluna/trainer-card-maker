@@ -1,7 +1,9 @@
-{% extends 'base.html' %} 
-{% block title %}Login{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Edit Pokemon{% endblock %}
 {% block content %}
-<form action="/login" method="POST">
+<h1>Edit Pokemon:</h1>
+{% include 'display-pokemon.html' %}
+<form action="/profile/{{user.id}}/edit/{{all_boxed[0].id}}" method="POST">
 	{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
 	'hidden' %}
 	<p>
@@ -9,6 +11,7 @@
 		%} {{error}} {% endfor %}
 	</p>
 	{% endfor %}
+    <div><small>Leave field blank + submit to remove nickname</small></div>
 	<button type="submit" class="btn btn-primary">Submit</button>
 </form>
 {% endblock %}

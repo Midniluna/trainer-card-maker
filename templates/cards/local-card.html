@@ -1,4 +1,6 @@
-{% extends 'base.html' %} {% block content %} 
+{% extends 'base.html' %} 
+{% block title %}Create Card{% endblock %}
+{% block content %} 
 <!-- This card viewer is for anonymous/not logged users -->
 <div class="card-container" style="text-align: center; width: 600px;">
 	{% for num in loop %}
@@ -18,7 +20,7 @@
 
 <div class="user-pokemon-container">
 <div style="width: 25%;">{% include '/cards/search-pkmn-form.html' %}</div>
-<div class="search-results"></div>
+<div class="search-results" style="width: 75%;"></div>
 </div>
 {% endblock %}
 

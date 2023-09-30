@@ -14,7 +14,7 @@ from IPython import embed
 
 # from forms import 
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
-from forms import SignupForm, LoginForm, GuessPokemon, PokemonSelectForm, PokemonSearchForm
+from forms import SignupForm, LoginForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -34,12 +34,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config['TESTING'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put here honestly")
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-
-
 
 
 @login_manager.user_loader
@@ -70,14 +69,13 @@ def do_logout():
 
 @app.route('/')
 def direct_home():
-    # embed()
+    """Direct to homepage when given base URL"""
     return redirect(url_for('homepage'))
 
 
 @app.route('/home')
 def homepage():
     """Example starter page"""
-    # embed()
 
     return render_template('homepage.html')
 
@@ -103,7 +101,7 @@ def signup():
             db.session.commit()
             
         except IntegrityError:
-            flash("Username is already taken", 'danger')
+            flash("Username or email is already taken", 'danger')
             return render_template('users/signup.html', form = form)
             
         do_login(user)
@@ -144,125 +142,29 @@ def logout():
 
     return redirect('/home')
 
-@app.route('/get-choices')
-def get_choices():
-    """Route to tell PokemonSelectForm what pokemon choices are available via javascript ajax"""
 
-    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
-    choices = []
-    for pokemon in all_pokemon:
-        choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))
-
-            
-@app.route('/new-card', methods=["GET", "POST"])
-def new_card():
-    """Allow user (logged-in or anon) to create a basic card that will be saved to the localstorage"""
-
-    selectform = PokemonSelectForm()
-    searchform = PokemonSearchForm()
-
-    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
-    selectform.pokemon.choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
-
-    loop = [num for num in range(1,7)]
-
-    return render_template('cards/local-card.html', form = selectform, searchform = searchform, loop = loop)
-
-
-# AGH. stuck here
-
-@app.route('/search-pokemon', methods=["GET", "PATCH"])
-def search_mon():
-    """Allow users to search for a given pokemon"""
-    embed()
-    input = request.json["input"]
-    
-    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).where(Pokemon.variant_name.like(f'%{input}%')).all()
-
-    response_obj = {}
-
-    for pokemon in all_pokemon:
-        # for ex: {'pikachu' : {'dexnum' : #0025} }
-        response_obj[pokemon.variant_name] = {'dexnum' : pokemon.dexnum, 'sprite' : pokemon.sprite}
-
-    return jsonify(response_obj)
-
-
-@app.route('/generate')
-# @login_required
-def gen_pokemon():
-    """Generate one pokemon daily for the user to catch"""
-
-    t = datetime.datetime.today()
-    today = t.strftime('%m/%d/%Y')
-
-    form = GuessPokemon()
-
-    can_gen = check_can_gen()
-    # embed()
-
-    # User has already caught a pokemon today
-    if can_gen == False:
-        flash("You've already caught a pokemon today!", 'error')
-        return redirect('/home')
-    
-    # User has generated a pokemon today but has not caught it
-    elif isinstance(can_gen, UserPkmn):
-        flash("You have already generated a pokemon today! You may re-attempt to catch it.", 'error')
-        can_gen = UserPkmn.query.get(session["curr_genned"])
-        species = Pokemon.query.get(can_gen.pokemon_id).species
-
-        return render_template('pokemon/generate.html', genned = can_gen, species = species, form = form)
-
-    # If the user has neither caught NOR generated a pokemon today, generate a new pokemon
-    elif can_gen == True:
-
-        # First check if the user still has a previously uncaught pokemon. If so, delete the pokemon from the database. Might mess around and change this later to add a "pokemon orphanage" or something where unclaimed pokemon can be caught, perhaps also daily. would mean maybe adding a "filter orphaned" function to the UserPkmn model... hmmn...
-        if CURR_GENNED_KEY in session:
-            last_genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
-            db.session.delete(last_genned)
-            db.session.commit()
-        
-        genned = UserPkmn.gen_pokemon()
-        species = Pokemon.query.get(genned.pokemon_id).species
-
-        g.user.last_genned = today
-        db.session.commit()
-        session[CURR_GENNED_KEY] = genned.id
-        
-        return render_template('pokemon/generate.html', genned = genned, species = species, form = form)
-    
-
-@app.route('/catch/<int:genned_id>', methods=["POST"])
-def catch_pokemon(genned_id):
-    """User attempts to catch generated pokemon. This is mostly done via a Javascript POST request to this route."""
-    
-    genned = UserPkmn.query.get(genned_id)
-    input = request.json["species"]
-    response = g.user.catch_pokemon(g.user, genned, input)
-
-    if response == "Success":
-        session.pop(CURR_GENNED_KEY)
-
-    return response
+# -------------------------------------------------
+# ----- LOGGED-IN USER ROUTES + CARD EDITING ------
+# -------------------------------------------------
 
 
 @app.route('/profile/<int:userid>')
 # @login_required
 def view_profile(userid):
     """View user profile"""
-    # if g.user and g.user.id != userid:
-    #     flash('Unauthorized action.', 'danger')
-    #     return redirect('/home')
-
-    # is_user = False
-    # if g.user and g.user.id == userid:
-    #     is_user = True
+    
+    # First check if user exists. If false, redirect to 404
+    user = User.query.get(userid)
+    if not user:
+        flash("User does not exist", 'danger')
+        return redirect("/home")
     
     card = Card.query.filter(Card.user_id == userid).one()
     slotted = card.return_slotted()
 
     return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
+
+# View + Edit Card
 
 @app.route('/card/edit/<int:userid>')
 def edit_card(userid):
@@ -326,19 +228,157 @@ def handle_card_delete(userid):
     
     return "Success!"
 
+# View + Edit caught Pokemon
 
-@app.route('/<int:userpkmn_id>/pokemon/edit')
-def edit_pokemon(userpkmn_id):
+@app.route('/profile/<int:user_id>/edit/<int:userpkmn_id>', methods=["GET", "POST"])
+def edit_pokemon(user_id, userpkmn_id):
     """Allow user to customize their pokemon"""
-    
+
     pokemon = UserPkmn.query.get(userpkmn_id)
-    if pokemon not in g.user.pokemon:
-        print("YOU DON'T OWN THIS POKEMON!")
-        print("Continue this later. Idk if this is gonna return the way I want it to so I've gotta inspect that a little later")
-        return
-    return
+    
+    # First confirm this user is the owner of the pokemon
+    if not g.user or pokemon not in g.user.pokemon:
+        flash("You don't have permission to do that", 'danger')
+        return redirect(f'/profile/{user_id}')
+    
+    form = EditUserPkmnForm()
+
+    if form.validate_on_submit():
+
+        nickname = form.nickname.data
+
+        if nickname == "":
+                pokemon.nickname = None
+        else:
+                pokemon.nickname = nickname.capitalize()
+
+            
+        db.session.commit()
+
+        flash(f"{pokemon.pokemon.species.capitalize()} is now named {pokemon.nickname if pokemon.nickname else pokemon.pokemon.species}!", 'success')
+            
+    return render_template('pokemon/edit-pokemon.html', form=form, user = g.user, all_boxed = [pokemon], hide_edit = True)
+        # return render_template("users/login.html", form=form)
+        
 
 
+
+# -------------------------------------------------
+# ------ POKEMON CATCHING/GENERATING ROUTES -------
+# -------------------------------------------------
+
+
+@app.route('/generate')
+# @login_required
+def gen_pokemon():
+    """Generate one pokemon daily for the user to catch"""
+
+    t = datetime.datetime.today()
+    today = t.strftime('%m/%d/%Y')
+
+    form = GuessPokemonForm()
+    can_gen = check_can_gen()
+    # User has already caught a pokemon today
+    if can_gen == False:
+        flash("You've already caught a pokemon today!", 'danger')
+        return redirect('/home')
+    
+    # User has generated a pokemon today but has not caught it
+    elif isinstance(can_gen, UserPkmn):
+        flash("You have already generated a pokemon today! You may re-attempt to catch it.", 'danger')
+        can_gen = UserPkmn.query.get(session["curr_genned"])
+        species = Pokemon.query.get(can_gen.pokemon_id).species
+
+        return render_template('pokemon/generate.html', genned = can_gen, species = species, form = form)
+
+    # If the user has neither caught NOR generated a pokemon today, generate a new pokemon
+    elif can_gen == True:
+
+        # First check if the user still has a previously uncaught pokemon. If so, delete the pokemon from the database. Might mess around and change this later to add a "pokemon orphanage" or something where unclaimed pokemon can be caught, perhaps also daily. would mean maybe adding a "filter orphaned" function to the UserPkmn model... hmmn...
+        if CURR_GENNED_KEY in session:
+            last_genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
+            db.session.delete(last_genned)
+            db.session.commit()
+        
+        # For guaranteed shiny generation, insert True into gen_pokemon() function
+        genned = UserPkmn.gen_pokemon()
+        species = Pokemon.query.get(genned.pokemon_id).species
+
+        g.user.last_genned = today
+        db.session.commit()
+        session[CURR_GENNED_KEY] = genned.id
+        
+        return render_template('pokemon/generate.html', genned = genned, species = species, form = form)
+    
+
+@app.route('/reset', methods=["POST"])
+def reset_pokemon():
+    g.user.last_genned = None
+    db.session.commit()
+    session.pop(CURR_GENNED_KEY)
+    return redirect('/generate')
+
+
+@app.route('/catch/<int:genned_id>', methods=["POST"])
+def catch_pokemon(genned_id):
+    """User attempts to catch generated pokemon. This is mostly done via a Javascript POST request to this route."""
+    
+    genned = UserPkmn.query.get(genned_id)
+    input = request.json["species"]
+    response = g.user.catch_pokemon(g.user, genned, input)
+
+    if response == "Success":
+        session.pop(CURR_GENNED_KEY)
+
+    return response
+
+# -------------------------------------------------
+# ---------- LOCALSTORAGE CARD MAKER --------------
+# -------------------------------------------------
+
+
+@app.route('/get-choices')
+def get_choices():
+    """Route to tell PokemonSelectForm what pokemon choices are available via javascript ajax"""
+
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+    choices = []
+    for pokemon in all_pokemon:
+        choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))
+
+            
+@app.route('/new-card', methods=["GET", "POST"])
+def new_card():
+    """Allow user (logged-in or anon) to create a basic card that will be saved to the localstorage"""
+
+    selectform = PokemonSelectForm()
+    searchform = PokemonSearchForm()
+
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+
+    choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
+    choices.insert(0, ("", "---NONE---"))
+
+    selectform.pokemon.choices = choices
+    loop = [num for num in range(1,7)]
+
+    return render_template('cards/local-card.html', form = selectform, searchform = searchform, loop = loop)
+
+
+@app.route('/search-pokemon', methods=["POST"])
+def search_mon():
+    """Allow users to search for a given pokemon"""
+    input = request.json["input"]
+    
+    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).where(Pokemon.variant_name.like(f'%{input}%')).all()
+
+    response_obj = {}
+
+    for pokemon in all_pokemon:
+        # for ex: {'pikachu' : {'dexnum' : #0025} }
+        response_obj[pokemon.variant_name] = {'dexnum' : pokemon.species_dexnum, 'sprite' : pokemon.sprite}
+
+    return jsonify(response_obj)
 
 
 
@@ -348,7 +388,6 @@ def check_can_gen():
 
     t = datetime.datetime.today()
     today = t.strftime('%m/%d/%Y')
-
     # If the user has neither caught a pokemon nor generated a pokemon today, return true
     if g.user.last_genned != today and g.user.last_catch != today:
         return True
@@ -362,53 +401,8 @@ def check_can_gen():
         genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
         return genned
     
+    
 
 ##############################################
 # CURRENT WIP BELOW. YOU ARE HERE!
 ############################################## 
-
-# def sort_pokemon(order, user_id = None):
-#     """Input a keyword for how pokemon should be ordered: 'dex number', 'alphabetical'; and a user_id if applicable. Add addi"""
-
-
-
-
-
-
-
-
-
-
-# Click slot. Make button active. Click chosen pokemon. collect slot data from active button, collect userpkmn id from chosen pokemon, send data to card editing route. Update card slot on database, return data needed to manipulate DOM (sprite, id, species, nickname)
-
-# Will need it to look something like this
-
-
-
-# ---------------- HOW TO DO POKEMON SELECT FORM -------------------
-
-    # form = PokemonSelectForm()
-    # all_pkmn = Pokemon.query.all()
-    
-    # for pokemon in all_pkmn:
-    #     form.pokemon.choices.append((pokemon.url, f"#{pokemon.dexnum} {pokemon.variant_name}"))
-
-    # if form.validate_on_submit():
-    #     url = form.pokemon.data
-    #     r = requests.get(url)
-    #     data = r.json()
-    #     pokemon = {"pkmn_img" : data["sprites"]["front_default"], "dexnum" : data["id"]}
-    #     return render_template('base.html', form = form, pokemon = pokemon)
-    
-    # return render_template('base.html', form = form)
-
-
-
-
-# @app.route('/pokemon/<int:dexnum>', methods=['POST'])
-# def load_pokemon():
-#     pokemon = request.form["pokemon"]
-#     r = requests.get(pokemon)
-#     data = r.json()
-
-

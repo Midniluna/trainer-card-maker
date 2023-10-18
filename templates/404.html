@@ -1,0 +1,6 @@
+{% extends 'base.html' %} {% block content %}
+<span style="display: flex; flex-direction: column; text-align: center; justify-content: center; align-content: center;">
+    <h1 style="margin: 1em 0em;">Oops! That page doesnt exist.</h1>
+    <img class="main-img" src="{{url_for('static', filename='images/psy.png')}}" alt="psyduck">
+</span>
+{% endblock %}

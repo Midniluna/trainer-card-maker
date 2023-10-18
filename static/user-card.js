@@ -1,5 +1,9 @@
 const BASE_URL = 'http://localhost:5000'
 
+function capitalize(str){
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 
 // Used to submit user's attempt to catch a pokemon
 
@@ -12,7 +16,8 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 	// remove any previous error message styling
 	if ($(".alert").hasClass("alert-danger")) {
 		$(".alert").toggleClass("alert-danger");
-	} else if ($(".alert").hasClass("alert-success")) {
+	}
+	if ($(".alert").hasClass("alert-success")) {
 		$(".alert").toggleClass("alert-success");
 	}
 
@@ -20,6 +25,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 
 	let $genned = $(".genned-mon").closest("div");
 	let gennedId = $genned.attr("data-genned-id");
+	let userid = $genned.attr("data-user-id");
 
 	if ($("#species").val() !== "") {
 		species = $("#species").val().toLowerCase();
@@ -27,7 +33,6 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 		let response = await axios.post(`${BASE_URL}/catch/${gennedId}`, {
 			species,
 		});
-		// console.log(response.data);
 
 		if (response.data === null) {
 			return;
@@ -46,7 +51,8 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 			$(".alert")
 				.toggleClass("alert-success")
 				.css("display", "block")
-				.append(`<p>Congrats! You've caught a(n) ${species}!</p>`);
+				.append(`<p>Congrats! You've caught a(n) ${species}! Would you like to name it? <a href='profile/${userid}/edit/${gennedId}'>[Yes]</a></p>`);
+			
 			$(".redirect").append(`
             <br>
             <a href="/home" class="btn btn-lg">Return Home</a>`);
@@ -84,9 +90,7 @@ $(".select-slot").on("click", async function (evt) {
 			let slot = $active.attr("data-slot-id")
 			let slot2 = $target.attr("data-slot-id")
 			let pkmn_id = $active.attr("data-userpkmn-id")
-			console.log(pkmn_id)
 			let pkmn2_id = $target.attr("data-userpkmn-id")
-			console.log(pkmn2_id)
 			let user_id = $(".card-container").attr("data-user-id")
 
 			await axios.patch(`${BASE_URL}/card/edit/${user_id}/submit`, {
@@ -111,17 +115,20 @@ $(".select-slot").on("click", async function (evt) {
 			// Save data from first slot to append to second slot and vice versa
 			let swapimg = $img.attr("src")
 			let swapnickname = $nickname.text()
+			console.log(swapnickname)
 			let swapspecies = $species.text()
 			let swapid =  $id.text()
 
 			let swapimg2 = $img2.attr("src")
 			let swapnickname2 = $nickname2.text()
+			console.log(swapnickname2)
 			let swapspecies2 = $species2.text()
 			let swapid2 =  $id2.text()
 			
 			// Fill first slot's data with data from second slot
 			$img.attr("src", swapimg2);
 			$nickname.text(swapnickname2);
+			console.log(swapnickname2)
 			$species.text(swapspecies2);
 			$id.text(swapid2)
 			$active.attr("data-userpkmn-id", pkmn2_id)
@@ -129,6 +136,7 @@ $(".select-slot").on("click", async function (evt) {
 			// Now fill second slot's data with data from first slot
 			$img2.attr("src", swapimg);
 			$nickname2.text(swapnickname);
+			console.log(swapnickname)
 			$species2.text(swapspecies);
 			$id2.text(swapid)
 			$target.attr("data-userpkmn-id", pkmn_id)
@@ -221,8 +229,6 @@ $(".delete-slot").on("click", async function (evt) {
 	
 	let slot_id = $target.attr("data-slot-id")
 	let user_id = $(".card-container").attr("data-user-id")
-	console.log("Heard")
-	console.log(slot_id)
 
 	await axios.post(`${BASE_URL}/card/edit/${user_id}/delete`, {
 			slot_id

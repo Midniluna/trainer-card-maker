@@ -15,8 +15,10 @@
 	class="genned-mon"
 	style="text-align: center"
 	data-genned-id="{{genned.id}}"
+	data-user-id="{{user.id}}"
 >
 	<div style="margin: auto; display: block">
+		{% if genned.is_shiny %}
 		<p style="display: inline-block">✨</p>
 		<img
 		src="{{genned.sprite}}"
@@ -24,6 +26,13 @@
 		style="margin: auto; display: inline-block"
 		/>
 		<p style="display: inline-block">✨</p>
+		{% else %}
+		<img
+		src="{{genned.sprite}}"
+		alt="Generated Pokemon"
+		style="margin: auto; display: inline-block"
+		/>
+		{% endif %}
 	</div>
 	<!-- Comment out this part to hide the pokemon name if you want to challenge yourself -->
 	<!-- <h4>{{species}}</h4> -->
@@ -51,7 +60,7 @@
 				{% for error in field.errors %} {{error}} {% endfor %}
 			</p>
 			{% endfor %}
-			<button type="submit" class="btn btn-primary">Submit</button>
+			<button type="submit" class="btn btn-warning">Submit</button>
 		</form>
 		<br>
 		<form action="/reset" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">

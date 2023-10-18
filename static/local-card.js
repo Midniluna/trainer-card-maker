@@ -1,10 +1,3 @@
-$slot1 = $(".pokemon-container[data-slot-index='slot1']")
-$slot2 = $(".pokemon-container[data-slot-index='slot2']")
-$slot3 = $(".pokemon-container[data-slot-index='slot3']")
-$slot4 = $(".pokemon-container[data-slot-index='slot4']")
-$slot5 = $(".pokemon-container[data-slot-index='slot5']")
-$slot6 = $(".pokemon-container[data-slot-index='slot6']")
-
 const SLOTLIST = ['slot1', 'slot2' ,'slot3', 'slot4', 'slot5', 'slot6']
 
 function initiateLocalcard() {
@@ -26,44 +19,51 @@ function initiateLocalcard() {
 
 initiateLocalcard();
 
-
-for (let i = 0; i < SLOTLIST.length; i++) {
-    // Iterate over pokemon stored in localCard and apply existing pokemon onto DOM
-
-    let slotKey = SLOTLIST[i]
-    let $targetDiv = $(`div[data-slot-index='${slotKey}']`)
-    let cardObj = JSON.parse(window.localStorage.getItem('localCard'))
-
-    if (cardObj[slotKey] !== "") {
-        let url = cardObj[slotKey]["url"]
-        let nickname = cardObj[slotKey]["nickname"]
-        let sprite = cardObj[slotKey]["sprite"]
-        let species = cardObj[slotKey]["species"]
-
-        if (nickname !== "") {
-            $targetDiv.find(".nickname").text(nickname)
-        }
+function append_pokemon(type) {
+    for (let i = 0; i < SLOTLIST.length; i++) {
+        // Iterate over pokemon stored in localCard and apply existing pokemon onto DOM
+    
+        let slotKey = SLOTLIST[i]
+        let $targetDiv = $(`.${type}[data-slot-index='${slotKey}']`)
+        let cardObj = JSON.parse(window.localStorage.getItem('localCard'))
+    
+        if (cardObj[slotKey] !== "") {
+            let url = cardObj[slotKey]["url"]
+            let nickname = cardObj[slotKey]["nickname"]
+            let sprite = cardObj[slotKey]["sprite"]
+            let species = cardObj[slotKey]["species"]
+    
+            if (nickname !== "") {
+                $targetDiv.find(".nickname").text(nickname)
+            }
+            else {
+                $targetDiv.find(".nickname").text("----")
+            }
+    
+            $targetDiv.find("img").attr("src", sprite)
+            $targetDiv.find(".species").text(species)
+            $targetDiv.attr("data-pokemon-url", url)
+    
+            // we also want to default the input values to match the provided pokemons' values
+            $targetDiv.find("select").val(url);
+            $targetDiv.find("#nickname").val(nickname);
+        } 
+        // If pokemon doesn't exist in given slot, ignore it
+        // Correction: make sure it appends the default image
         else {
+            $targetDiv.find("img").attr("src", "/static/images/no-symbol.png")
+            $targetDiv.find(".species").text("No pokemon")
             $targetDiv.find(".nickname").text("----")
+            $targetDiv.find("#nickname").val("")
         }
-
-        $targetDiv.find("img").attr("src", sprite)
-        $targetDiv.find(".species").text(species)
-        $targetDiv.attr("data-pokemon-url", url)
-
-        // we also want to default the input values to match the provided pokemons' values
-        $targetDiv.find("select").val(url);
-        $targetDiv.find("#nickname").val(nickname);
-    } 
-    // If pokemon doesn't exist in given slot, ignore it
-    // Correction: make sure it appends the default image
-    else {
-        $targetDiv.find("img").attr("src", "/static/images/no-symbol.png")
-        $targetDiv.find(".species").text("No pokemon")
-        $targetDiv.find(".nickname").text("----")
-        $targetDiv.find("#nickname").val("")
     }
+
 }
+
+append_pokemon("saved");
+append_pokemon("local");
+
+
 
 
 
@@ -114,6 +114,7 @@ $(".pokemon-list-form").on("submit", async function (evt) {
         
         let nickname = $TARGET.find("#nickname").val();
         let pokemon = response.data.name;
+        pokemon = capitalize(pokemon)
         let sprite = response.data.sprites.front_default;
         
         cardObj[slot] = {
@@ -146,8 +147,11 @@ $(".pokemon-search-form").on("submit", async function (evt) {
     const $TARGET = $(this).find("#search");
     const $APPENDRESULTS = $(".search-results")
     let input = $TARGET.val()
-    console.log(input)
     $APPENDRESULTS.empty()
+
+    if (input == "") {
+        return
+    }
 
     let response = await axios.post(`${BASE_URL}/search-pokemon`, {
         input
@@ -166,7 +170,7 @@ $(".pokemon-search-form").on("submit", async function (evt) {
 		alt=""
 		class="pokemon-image"
 		/>
-		<span style="display: block"><b>Name:</b> ${pokemon}</span>
+		<span style="display: block"><b>Name:</b> ${capitalize(pokemon)}</span>
 		<span style="display: block"><b>Dex number</b>: #${dexnum}</span>
         `)
     });

@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}Edit Pokemon{% endblock %}
 {% block content %}
-<h1>Edit Pokemon:</h1>
-{% include 'display-pokemon.html' %}
-<form action="/profile/{{user.id}}/edit/{{all_boxed[0].id}}" method="POST">
-	{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
-	'hidden' %}
-	<p>
-		{{field.label}} {{field(class="form-control")}} {% for error in field.errors
-		%} {{error}} {% endfor %}
-	</p>
-	{% endfor %}
-    <div><small>Leave field blank + submit to remove nickname</small></div>
-	<button type="submit" class="btn btn-primary">Submit</button>
-</form>
+<div style="padding: 20px">
+	<h1>Edit Pokemon:</h1>
+	{% include 'display-pokemon.html' %}
+	<form action="/profile/{{user.id}}/edit/{{all_boxed[0].id}}" method="POST">
+		{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+		'hidden' %}
+		<p>
+			{{field.label}} {{field(class="form-control")}} {% for error in field.errors
+			%} {{error}} {% endfor %}
+		</p>
+		{% endfor %}
+		<div><small>Leave field blank + submit to remove nickname</small></div>
+		<button type="submit" class="btn btn-warning">Submit</button>
+	</form>
+</div>
 {% endblock %}

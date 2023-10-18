@@ -1,24 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<div style="text-align: center;">
-    <img src="static/images/pika.png" alt="Pikachu official art" class="home-pika" style="margin: auto; display: block;">
+<div class="homepage-sections">
+<div class="homepage-central">
+    <img src="static/images/pika.png" alt="Pikachu official art" class="home-pika">
     <h1>Welcome to the Pokepals homepage!</h1>
     <hr>
     {% if g.user %}
     <h3>Generate your daily pokemon?</h3>
     <br>
-    <a href="/generate" class="btn btn-lg btn-primary" style="margin-bottom: 20px;">Generate</a>
+    <a href="/generate" class="btn btn-lg btn-warning" style="margin-bottom: 20px;">Generate</a>
     {% else %}
     <h3>Please login or create an account</h2>
-    <br>
-    {% endif %}
     <br>
     <h1>OR</h1>
     <br>
     <h3>Create your Trainer Card</h3>
     <br>
-    <a href="/new-card" class="btn btn-lg btn-primary">START</a>
+    <a href="/new-card" class="btn btn-lg btn-danger">START</a>
+    {% endif %}
+</div>
 </div>
 
 {% endblock %}

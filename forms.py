@@ -20,7 +20,10 @@ class LoginForm(FlaskForm):
     username = StringField('Enter Username', validators=[InputRequired()])
     password = PasswordField('Enter password', validators=[InputRequired()])
 
-
+class EditProfileForm(FlaskForm):
+    """Form for editing user details"""
+    nickname = StringField('Enter new nickname', validators=[Optional()], render_kw={"placeholder" : "Nickname (Optional)"})
+    img_url = StringField('Profile picture URL', validators=[Optional()], render_kw={"placeholder" : "URL (Optional)"})
 
 class GuessPokemonForm(FlaskForm):
     """Form for guessing generated pokemon"""
@@ -37,4 +40,4 @@ class PokemonSelectForm(FlaskForm):
 
 class PokemonSearchForm(FlaskForm):
     """Form to allow users to search for pokemon by name"""
-    search = StringField("Enter Pokemon name:")
+    search = StringField("Enter Pokemon name:", render_kw={"placeholder" : "Or enter region name for regional variants"})

@@ -1,10 +1,28 @@
 {% extends 'base.html' %} 
 {% block title %}Create Card{% endblock %}
 {% block content %} 
-<!-- This card viewer is for anonymous/not logged users -->
-<div class="card-container" style="text-align: center; width: 600px;">
+<h1 style="text-align: center;">Your Card:</h1>
+
+<div class="user-pokemon-container card-container flex-wrap center-div">
 	{% for num in loop %}
-	<div class="pokemon-container" style="text-align: center; margin: 0px; padding-bottom: 10px; max-width: 200px;" data-slot-index="slot{{num}}" data-pokemon-url="">
+	<div class="pokemon-container saved" data-slot-index="slot{{num}}">
+		<span class="nickname" style="display: block;">----</span>
+		<img
+		src="{{url_for('static', filename='images/no-symbol.png')}}"
+		alt=""
+		class="pokemon-image"
+		/>
+		<span style="display: block" class="species">No pokemon</span>
+	</div>
+	{% endfor %}
+</div>
+<h4 style="text-align: center;">Reload to view updated card</h4>
+<hr>
+<!-- This card viewer is for anonymous/not logged users -->
+<div class="local-card-and-search-wrapper">
+<div class="user-pokemon-container local-card-form-container flex-wrap">
+	{% for num in loop %}
+	<div class="pokemon-container local" style="text-align: center; margin: 0px; padding-bottom: 10px; max-width: 200px;" data-slot-index="slot{{num}}" data-pokemon-url="">
 		<span class="nickname" style="display: block;">----</span>
 		<img
 		src="{{url_for('static', filename='images/no-symbol.png')}}"
@@ -18,9 +36,10 @@
 	<small>*note: Pokemon are sorted by national pokedex number, not by regional pokedex. (So Johtoian Raichu and Alolan Raichu will both be under all Gen 2 pokemon, Unovan Zorua and Hisuian Zorua will be under Gen 5 pokemon, etc)</small>
 </div>
 
-<div class="user-pokemon-container">
-<div style="width: 25%;">{% include '/cards/search-pkmn-form.html' %}</div>
-<div class="search-results" style="width: 75%;"></div>
+<div class="search-result-container">
+	<div>{% include '/cards/search-pkmn-form.html' %}</div>
+	<div class="search-results"></div>
+</div>
 </div>
 {% endblock %}
 

@@ -11,6 +11,7 @@ from models import db, Pokemon, User, UserPkmn, Box, Card
 os.environ['DATABASE_URL'] = "postgresql:///pokepals_test"
 
 from app import app, CURR_USER_KEY
+from models import CURR_GENNED_KEY
 
 db.create_all()
 
@@ -128,8 +129,6 @@ class UserModelsTestCase(TestCase):
         commit2box = Box(user_id = user.id, userpkmn_id = genned.id)
         db.session.add(commit2box)
         db.session.commit()
-
-        # embed()
 
         # if it exists, will return true. 
         boxed = Box.query.filter_by(user_id = user.id, userpkmn_id = genned.id).first()

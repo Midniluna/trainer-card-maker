@@ -1,5 +1,5 @@
 <!-- This card viewer is for logged-in users or for viewing cards for other logged-in users -->
-<div class="card-container" data-user-id="{{user.id}}">
+<div class="user-pokemon-container card-container flex-wrap center-div" data-user-id="{{user.id}}">
 	<!-- "slotted" is an object with slot ids as keys and UserPkmn objects as associated values -->
 	{% for slot in slotted %} {% if slotted.get(slot) %}
 	<div class="pokemon-container">

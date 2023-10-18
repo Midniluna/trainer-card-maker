@@ -14,7 +14,7 @@ from IPython import embed
 
 # from forms import 
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
-from forms import SignupForm, LoginForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
+from forms import SignupForm, LoginForm, EditProfileForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -34,13 +34,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['TESTING'] = False
+# app.config['TESTING'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put here honestly")
 # toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-
+# My only issue is that wil all of this, when I add @login_required in a route, it just brings me to a login route regardless of whether or not I'm logged in, and when I DO login, it redirects to the homepage, and when I try to get back to the route requiring the login, it makes me login again, never letting me into the route I want to get into. I don't really understand why
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id) or None
@@ -67,6 +67,10 @@ def do_logout():
         del session[CURR_USER_KEY]
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 @app.route('/')
 def direct_home():
     """Direct to homepage when given base URL"""
@@ -78,6 +82,7 @@ def homepage():
     """Example starter page"""
 
     return render_template('homepage.html')
+
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -148,21 +153,61 @@ def logout():
 # -------------------------------------------------
 
 
-@app.route('/profile/<int:userid>')
+@app.route('/profile/<int:user_id>')
 # @login_required
-def view_profile(userid):
+def view_profile(user_id):
     """View user profile"""
-    
-    # First check if user exists. If false, redirect to 404
-    user = User.query.get(userid)
-    if not user:
-        flash("User does not exist", 'danger')
-        return redirect("/home")
-    
-    card = Card.query.filter(Card.user_id == userid).one()
+    card = Card.query.filter(Card.user_id == user_id).one()
+
+    all_boxed = []
+
+    # Sort it so nicknamed pokemon appear first
+    for pokemon in card.user.pokemon:
+            next =  0
+            if pokemon.nickname is not None:
+                all_boxed.insert(next, pokemon)
+                next += 1
+            else:
+                all_boxed.append(pokemon)
+
     slotted = card.return_slotted()
 
-    return render_template('users/profile.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted)
+    return render_template('users/profile.html', user = card.user, all_boxed = all_boxed, slotted = slotted)
+
+
+@app.route('/profile/<int:user_id>/edit', methods=["GET", "POST"])
+def edit_profile(user_id):
+    """View user profile"""
+    
+    # First check if user exists. If false, redirect to homepage
+    user = User.query.get(user_id)
+    if not g.user or g.user.id != user_id:
+        flash('Unauthorized action.', 'danger')
+        return redirect('/home')
+    
+    form = EditProfileForm(obj=user)
+    form.populate_obj(user)
+
+    if form.validate_on_submit():
+        
+        img_url = form.img_url.data
+        nickname = form.nickname.data
+        
+        if nickname != "":
+            user.nickname = nickname
+
+        if img_url != "":
+            user.img_url = img_url
+        else:
+            user.img_url = '/static/images/default-pic.png'
+
+        user.nickname = form.nickname.data
+
+        db.session.commit()
+        return redirect(url_for('edit_profile', user_id=user_id))
+    
+    return render_template("/users/edit-user.html", user=user, form=form)
+
 
 # View + Edit Card
 
@@ -177,9 +222,21 @@ def edit_card(userid):
     else:
         card = Card.query.filter(Card.user_id == userid).one()
         slotted = card.return_slotted()
+
+        all_boxed = []
+
+        # Sort it so nicknamed pokemon appear first
+        for pokemon in card.user.pokemon:
+            next =  0
+            if pokemon.nickname is not None:
+                all_boxed.insert(next, pokemon)
+                next += 1
+            else:
+                all_boxed.append(pokemon)
+
         
 
-        return render_template('/cards/edit-card.html', user = card.user, all_boxed = card.user.pokemon, slotted = slotted, edit = True)
+        return render_template('/cards/edit-card.html', user = card.user, all_boxed = all_boxed, slotted = slotted, edit = True)
     
     
 @app.route('/card/edit/<int:userid>/submit', methods=["PATCH", "POST"])
@@ -238,7 +295,7 @@ def edit_pokemon(user_id, userpkmn_id):
     
     # First confirm this user is the owner of the pokemon
     if not g.user or pokemon not in g.user.pokemon:
-        flash("You don't have permission to do that", 'danger')
+        flash('Unauthorized action.', 'danger')
         return redirect(f'/profile/{user_id}')
     
     form = EditUserPkmnForm()
@@ -272,6 +329,7 @@ def edit_pokemon(user_id, userpkmn_id):
 # @login_required
 def gen_pokemon():
     """Generate one pokemon daily for the user to catch"""
+    user = g.user
 
     t = datetime.datetime.today()
     today = t.strftime('%m/%d/%Y')
@@ -289,7 +347,7 @@ def gen_pokemon():
         can_gen = UserPkmn.query.get(session["curr_genned"])
         species = Pokemon.query.get(can_gen.pokemon_id).species
 
-        return render_template('pokemon/generate.html', genned = can_gen, species = species, form = form)
+        return render_template('pokemon/generate.html', genned = can_gen, species = species, user=user, form = form)
 
     # If the user has neither caught NOR generated a pokemon today, generate a new pokemon
     elif can_gen == True:
@@ -308,11 +366,12 @@ def gen_pokemon():
         db.session.commit()
         session[CURR_GENNED_KEY] = genned.id
         
-        return render_template('pokemon/generate.html', genned = genned, species = species, form = form)
+        return render_template('pokemon/generate.html', genned = genned, species = species, user = g.user, form = form)
     
 
 @app.route('/reset', methods=["POST"])
 def reset_pokemon():
+    """Deletes currently genned pokemon """
     g.user.last_genned = None
     db.session.commit()
     session.pop(CURR_GENNED_KEY)

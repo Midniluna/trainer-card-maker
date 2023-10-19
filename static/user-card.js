@@ -23,20 +23,20 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 
 	let species = "";
 
-	let $genned = $(".genned-mon").closest("div");
-	let gennedId = $genned.attr("data-genned-id");
-	let userid = $genned.attr("data-user-id");
+	const $GENNED = $(".genned-mon").closest("div");
+	const GENNED_ID = $GENNED.attr("data-genned-id");
+	const USER_ID = $GENNED.attr("data-user-id");
 
 	if ($("#species").val() !== "") {
 		species = $("#species").val().toLowerCase();
 
-		let response = await axios.post(`${BASE_URL}/catch/${gennedId}`, {
+		const RESP = await axios.post(`${BASE_URL}/catch/${GENNED_ID}`, {
 			species,
 		});
 
-		if (response.data === null) {
+		if (RESP.data === null) {
 			return;
-		} else if (response.data === "Failed") {
+		} else if (RESP.data === "Failed") {
 			$("#species").val() == "";
 
 			// error message content is always cleared at the start, so always re-append error when catch-attempt is failed
@@ -44,14 +44,14 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 				.css("display", "block")
 				.toggleClass("alert-danger")
 				.append(`<p>That is the incorrect pokemon. Check your spelling!</p>`);
-		} else if (response.data === "Success") {
+		} else if (RESP.data === "Success") {
 			$("#species").val() == "";
 			// window.location.replace("http://localhost:5000/home");
 			$(".genned-mon-content").empty();
 			$(".alert")
 				.toggleClass("alert-success")
 				.css("display", "block")
-				.append(`<p>Congrats! You've caught a(n) ${species}! Would you like to name it? <a href='profile/${userid}/edit/${gennedId}'>[Yes]</a></p>`);
+				.append(`<p>Congrats! You've caught a(n) ${species}! Would you like to name it? <a href='profile/${USER_ID}/edit/${GENNED_ID}'>[Yes]</a></p>`);
 			
 			$(".redirect").append(`
             <br>
@@ -71,77 +71,75 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 
 $(".select-slot").on("click", async function (evt) {
 	evt.preventDefault();
-	let $target = $(this)
+	const $TARGET = $(this)
 
-	let $active = $(".active");
+	const $ACTIVE = $(".active");
 
 	// If there are no selected buttons, let user select
-	if ($active.length === 0) {
-		$target.toggleClass("active");
+	if ($ACTIVE.length === 0) {
+		$TARGET.toggleClass("active");
 	} 
 
-	else if ($active.length === 1) {
+	else if ($ACTIVE.length === 1) {
 		// if target is the "active" button, deselect
-		if ($target.hasClass("active")) {
-			$target.toggleClass("active");
+		if ($TARGET.hasClass("active")) {
+			$TARGET.toggleClass("active");
 		}
 		// If user selects one slot and then another slot, swap the pokemons' positions
 		else {
-			let slot = $active.attr("data-slot-id")
-			let slot2 = $target.attr("data-slot-id")
-			let pkmn_id = $active.attr("data-userpkmn-id")
-			let pkmn2_id = $target.attr("data-userpkmn-id")
-			let user_id = $(".card-container").attr("data-user-id")
+			const SLOT = $ACTIVE.attr("data-slot-id")
+			const SLOT2 = $TARGET.attr("data-slot-id")
+			const PKMN_ID = $ACTIVE.attr("data-userpkmn-id")
+			const PKMN2_ID = $TARGET.attr("data-userpkmn-id")
+			const USER_ID = $(".card-container").attr("data-user-id")
 
-			await axios.patch(`${BASE_URL}/card/edit/${user_id}/submit`, {
-				slot,
-				slot2,
-				pkmn_id,
-				pkmn2_id,
+			await axios.patch(`${BASE_URL}/card/edit/${USER_ID}/submit`, {
+				slot : SLOT,
+				slot2 : SLOT2,
+				pkmn_id : PKMN_ID,
+				pkmn2_id : PKMN2_ID,
 			})
 
 			// Swap pokemon data on DOM
 
-			let $img = $active.parent().find(".pokemon-image");
-			let $nickname = $active.parent().find(".nickname");
-			let $species = $active.parent().find(".species");
-			let $id = $active.parent().find(".pkmnID");
+			const $IMG = $ACTIVE.parent().find(".pokemon-image");
+			const $NICKNAME = $ACTIVE.parent().find(".nickname");
+			const $SPECIES = $ACTIVE.parent().find(".species");
+			const $ID = $ACTIVE.parent().find(".pkmnID");
 
-			let $img2 = $target.parent().find(".pokemon-image");
-			let $nickname2 = $target.parent().find(".nickname");
-			let $species2 = $target.parent().find(".species");
-			let $id2 = $target.parent().find(".pkmnID")
+			const $IMG_2 = $TARGET.parent().find(".pokemon-image");
+			const $NICKNAME_2 = $TARGET.parent().find(".nickname");
+			const $SPECIES_2 = $TARGET.parent().find(".species");
+			const $ID_2 = $TARGET.parent().find(".pkmnID")
 
 			// Save data from first slot to append to second slot and vice versa
-			let swapimg = $img.attr("src")
-			let swapnickname = $nickname.text()
-			console.log(swapnickname)
-			let swapspecies = $species.text()
-			let swapid =  $id.text()
+			// These values aren't redeclared later but it looks easier to read if I leave these as let.
+			// There's definitely a more efficient way to do this but I'll look into how to do that a bit later
+			let swapimg = $IMG.attr("src")
+			let swapnickname = $NICKNAME.text()
+			let swapspecies = $SPECIES.text()
+			let swapid =  $ID.text()
 
-			let swapimg2 = $img2.attr("src")
-			let swapnickname2 = $nickname2.text()
-			console.log(swapnickname2)
-			let swapspecies2 = $species2.text()
-			let swapid2 =  $id2.text()
+			let swapimg2 = $IMG_2.attr("src")
+			let swapnickname2 = $NICKNAME_2.text()
+			let swapspecies2 = $SPECIES_2.text()
+			let swapid2 =  $ID_2.text()
 			
 			// Fill first slot's data with data from second slot
-			$img.attr("src", swapimg2);
-			$nickname.text(swapnickname2);
-			console.log(swapnickname2)
-			$species.text(swapspecies2);
-			$id.text(swapid2)
-			$active.attr("data-userpkmn-id", pkmn2_id)
+			$IMG.attr("src", swapimg2);
+			$NICKNAME.text(swapnickname2);
+			$SPECIES.text(swapspecies2);
+			$ID.text(swapid2)
+			$ACTIVE.attr("data-userpkmn-id", PKMN2_ID)
 
 			// Now fill second slot's data with data from first slot
-			$img2.attr("src", swapimg);
-			$nickname2.text(swapnickname);
-			console.log(swapnickname)
-			$species2.text(swapspecies);
-			$id2.text(swapid)
-			$target.attr("data-userpkmn-id", pkmn_id)
+			$IMG_2.attr("src", swapimg);
+			$NICKNAME_2.text(swapnickname);
+			$SPECIES_2.text(swapspecies);
+			$ID_2.text(swapid)
+			$TARGET.attr("data-userpkmn-id", PKMN_ID)
 
-			$active.toggleClass("active");
+			$ACTIVE.toggleClass("active");
 		}
 	}
 	return
@@ -151,30 +149,29 @@ $(".select-slot").on("click", async function (evt) {
 
 $(".select-mon").on("click", async function (evt) {
 	evt.preventDefault();
-	let $target = $(this)
-	let $active = $(".active");
+	const $TARGET = $(this)
+	const $ACTIVE = $(".active");
 
-	if ($active.length === 0) {
+	if ($ACTIVE.length === 0) {
 		// if none selected, don't do anything
 		console.log("None selected")
 		return
 	}
 	else {
 		
-		let slot = $active.attr("data-slot-id")
-		let pkmn_id = $target.attr("data-userpkmn-id")
-		let user_id = $(".card-container").attr("data-user-id")
+		const SLOT = $ACTIVE.attr("data-slot-id")
+		const PKMN_ID = $TARGET.attr("data-userpkmn-id")
+		const USER_ID = $(".card-container").attr("data-user-id")
 		
 		
 		// Check through list of userpkmn ids currently in card and confirm selected pokemon's id is not a perfect match to any of them
-		let id_list = []
+		const ID_LIST = []
 
 		$(".select-slot").each(function() {
 			let id = $(this).attr("data-userpkmn-id")
-			id_list.push(parseInt(id))
+			ID_LIST.push(parseInt(id))
 		})
-		
-			if (id_list.includes(parseInt(pkmn_id)) ) {
+			if (ID_LIST.includes(parseInt(PKMN_ID)) ) {
 				return
 			}
 			
@@ -182,36 +179,36 @@ $(".select-mon").on("click", async function (evt) {
 			else {
 				
 				// Tell python slots are not being swapped. Swaps only happen on .select-slot buttons
-				let slot2 = "None" 
-				let pkmn2_id = "None" 
+				const SLOT2 = "None" 
+				const PKMN2_ID = "None" 
 
-				let resp = await axios.post(`${BASE_URL}/card/edit/${user_id}/submit`, {
-					slot,
-					slot2,
-					pkmn_id,
-					pkmn2_id,
+				const RESP = await axios.post(`${BASE_URL}/card/edit/${USER_ID}/submit`, {
+					slot : SLOT,
+					slot2 : SLOT2,
+					pkmn_id : PKMN_ID,
+					pkmn2_id : PKMN2_ID,
 				});
-				img = $active.parent().find(".pokemon-image");
-				nickname = $active.parent().find(".nickname");
-				species = $active.parent().find(".species");
-				id = $active.parent().find(".pkmnID");
+				const IMG = $ACTIVE.parent().find(".pokemon-image");
+				const NICKNAME = $ACTIVE.parent().find(".nickname");
+				const SPECIES = $ACTIVE.parent().find(".species");
+				const ID = $ACTIVE.parent().find(".pkmnID");
 
 				// Append delete button if adding a pokemon into a blank slot
-				let $delete_btn = $(`<button class="btn btn-danger" data-slot-id="${slot}">Remove</button>`)
+				const $DELETE_BTN = $(`<button class="btn btn-danger" data-slot-id="${SLOT}">Remove</button>`)
 
 				// If there's 
-				if (species.text() == "No pokemon") {
-					$active.parent().find("span.delete-slot").append($delete_btn);
+				if (SPECIES.text() == "No pokemon") {
+					$ACTIVE.parent().find("span.delete-slot").append($DELETE_BTN);
 					// $delete_btn.insertAfter($active);
 				}
 	
-				img.attr("src", resp.data.sprite);
-				nickname.text(`${resp.data.nickname}`);
-				species.text(`${resp.data.species}`);
-				id.text(`ID: #${pkmn_id}`);
-				$active.attr("data-userpkmn-id", pkmn_id)
+				IMG.attr("src", RESP.data.sprite);
+				NICKNAME.text(`${RESP.data.nickname}`);
+				SPECIES.text(`${RESP.data.species}`);
+				ID.text(`ID: #${PKMN_ID}`);
+				$ACTIVE.attr("data-userpkmn-id", PKMN_ID)
 
-				$active.toggleClass("active")
+				$ACTIVE.toggleClass("active")
 
 			}
 			
@@ -225,26 +222,26 @@ $(".select-mon").on("click", async function (evt) {
 
 $(".delete-slot").on("click", async function (evt) {
 	evt.preventDefault();
-	let $target = $(this).siblings(".select-slot")
+	const $TARGET = $(this).siblings(".select-slot")
 	
-	let slot_id = $target.attr("data-slot-id")
-	let user_id = $(".card-container").attr("data-user-id")
+	const SLOT_ID = $TARGET.attr("data-slot-id")
+	const USER_ID = $(".card-container").attr("data-user-id")
 
-	await axios.post(`${BASE_URL}/card/edit/${user_id}/delete`, {
-			slot_id
+	await axios.post(`${BASE_URL}/card/edit/${USER_ID}/delete`, {
+			slot_id : SLOT_ID
 	})
 
 	
-	img = $target.parent().find(".pokemon-image");
-	nickname = $target.parent().find(".nickname");
-	species = $target.parent().find(".species");
-	id = $target.parent().find(".pkmnID");
+	const IMG = $TARGET.parent().find(".pokemon-image");
+	const NICKNAME = $TARGET.parent().find(".nickname");
+	const SPECIES = $TARGET.parent().find(".species");
+	const ID = $TARGET.parent().find(".pkmnID");
 
-	img.attr("src", "http://localhost:5000/static/images/no-symbol.png");
-	nickname.text("(nickname)");
-	species.text("No pokemon");
-	id.text(`ID: Null`);
-	$target.attr("data-userpkmn-id", "")
+	IMG.attr("src", "http://localhost:5000/static/images/no-symbol.png");
+	NICKNAME.text("(nickname)");
+	SPECIES.text("No pokemon");
+	ID.text(`ID: Null`);
+	$TARGET.attr("data-userpkmn-id", "")
 
 	$(this).find(".btn-danger").remove()
 })

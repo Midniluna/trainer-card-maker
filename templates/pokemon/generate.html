@@ -42,7 +42,8 @@
 		style="margin-left: auto; margin-right: auto; width: fit-content"
 	>
 		<form
-			action="/catch/{{genned.id}}"
+			action="{{url_for('catch_pokemon', genned_id = genned.id)}}"
+			
 			method="POST"
 			id="guess-pokemon-form"
 			style="text-align: center; margin-left: auto; margin-right: auto"
@@ -63,7 +64,7 @@
 			<button type="submit" class="btn btn-warning">Submit</button>
 		</form>
 		<br>
-		<form action="/reset" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">
+		<form action="{{url_for('reset')}}" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">
 			<button class="btn">Reset</button>
 		</form>
 	</div>

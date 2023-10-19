@@ -4,7 +4,7 @@
 <div style="padding: 20px">
 	<h1>Edit Pokemon:</h1>
 	{% include 'display-pokemon.html' %}
-	<form action="/profile/{{user.id}}/edit/{{all_boxed[0].id}}" method="POST">
+	<form action="{{url_for('edit_pokemon', user_id = user.id, userpkmn_id = all_boxed[0].id)}}" method="POST">
 		{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
 		'hidden' %}
 		<p>

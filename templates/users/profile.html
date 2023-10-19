@@ -16,7 +16,7 @@
 	<!-- TRAINER CARD GOES HERE -->
 	{% include '/cards/user-card.html'%} 
 	{% if g.user and g.user.id == user.id %} 
-	<a href="/card/edit/{{user.id}}" class="btn btn-warning">Edit Card</a> 
+	<a href="{{url_for('edit_card', user_id = user.id)}}" class="btn btn-warning">Edit Card</a> 
 	{% endif %}
 	<hr />
 	<h2>All {{(user.username).capitalize()}}'s pokemon</h2>

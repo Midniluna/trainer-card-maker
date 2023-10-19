@@ -3,13 +3,13 @@
 {% block content %}
 <div class="homepage-sections">
 <div class="homepage-central">
-    <img src="static/images/pika.png" alt="Pikachu official art" class="home-pika">
+    <img src="{{url_for('static', filename='images/pika.png')}}" alt="Pikachu official art" class="main-img">
     <h1>Welcome to the Pokepals homepage!</h1>
     <hr>
     {% if g.user %}
     <h3>Generate your daily pokemon?</h3>
     <br>
-    <a href="/generate" class="btn btn-lg btn-warning" style="margin-bottom: 20px;">Generate</a>
+    <a href="{{url_for('gen_pokemon')}}" class="btn btn-lg btn-warning" style="margin-bottom: 20px;">Generate</a>
     {% else %}
     <h3>Please login or create an account</h2>
     <br>
@@ -17,7 +17,7 @@
     <br>
     <h3>Create your Trainer Card</h3>
     <br>
-    <a href="/new-card" class="btn btn-lg btn-danger">START</a>
+    <a href="{{url_for('new_card')}}" class="btn btn-lg btn-danger">START</a>
     {% endif %}
 </div>
 </div>

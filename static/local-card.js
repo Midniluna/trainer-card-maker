@@ -48,8 +48,7 @@ function append_pokemon(type) {
             $targetDiv.find("select").val(url);
             $targetDiv.find("#nickname").val(nickname);
         } 
-        // If pokemon doesn't exist in given slot, ignore it
-        // Correction: make sure it appends the default image
+        // If pokemon doesn't exist in given slot, make sure it appends the default image
         else {
             $targetDiv.find("img").attr("src", "/static/images/no-symbol.png")
             $targetDiv.find(".species").text("No pokemon")

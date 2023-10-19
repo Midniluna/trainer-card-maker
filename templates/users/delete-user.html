@@ -5,7 +5,7 @@
     <h1 style="margin: 1em 0em;">WARNING!</h1>
     <br>
     <h3>Are you sure you want to permanently delete this account?</h3>
-    <form action="/profile/{{g.user.id}}/delete" method="POST"></form>
+    <form action="{{url_for('confirm_user_delete', user_id = g.user.id)}}" method="POST"></form>
     <br>
     <button type="submit" class="btn btn-lg btn-danger" style="display:flex; align-self:center;">YES</button>
 </span>

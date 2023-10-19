@@ -161,15 +161,15 @@ def view_profile(user_id):
 
     all_boxed = UserPkmn.sort_pokemon(user_id, "oldest")
 
-    index = 0
     # Sort it so nicknamed pokemon appear first
+    index = 0
     while index < len(all_boxed):
             next =  0
             pokemon = all_boxed[index]
             if pokemon.nickname is not None:
-                all_boxed.pop(index)
-                all_boxed.insert(next, pokemon)
-                next += 1
+                all_boxed.pop(index) #remove pokemon from original index
+                all_boxed.insert(next, pokemon) #move it to first index or next index after previously moved one
+                next += 1 
             index += 1
 
     slotted = card.return_slotted()
@@ -206,6 +206,7 @@ def edit_profile(user_id):
         user.nickname = form.nickname.data
 
         db.session.commit()
+        # refresh the page
         return redirect(url_for('edit_profile', user_id=user_id))
     
     return render_template("/users/edit-user.html", user=user, form=form)

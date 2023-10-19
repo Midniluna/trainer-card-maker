@@ -294,8 +294,6 @@ class User(db.Model):
         pkmn = Pokemon.query.get(genned.pokemon_id)
 
         if input == pkmn.species:
-
-            # embed()
             new_boxed = Box(user_id = user.id, userpkmn_id = genned.id)
             db.session.add(new_boxed)
             user.last_catch = today
@@ -322,7 +320,7 @@ class Card(db.Model):
 
     __tablename__ = 'card'
     
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE, delete-orphan"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key=True)
 
     slot1_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)
     slot2_id = db.Column(db.Integer, db.ForeignKey('users_pokemon.id', ondelete='SET NULL'), nullable=True, default=None)

@@ -245,3 +245,37 @@ $(".delete-slot").on("click", async function (evt) {
 
 	$(this).find(".btn-danger").remove()
 })
+
+$("#delete-user-form").on("submit", async function(evt) {
+    evt.preventDefault();
+	console.log("Clicked!")
+
+    $(".alert").empty();
+
+	// remove any previous error message styling
+	if ($(".alert").hasClass("alert-danger")) {
+		$(".alert").toggleClass("alert-danger");
+	}
+	if ($(".alert").hasClass("alert-success")) {
+		$(".alert").toggleClass("alert-success");
+	}
+    
+    const USER_ID = $(this).attr("data-user-id");
+
+    const RESP = await axios.post(`/profile/${USER_ID}/delete`);
+    
+    if (RESP.data == "FALSE") {
+        $(".alert")
+				.css("display", "block")
+				.toggleClass("alert-danger")
+				.append(`<p>Invalid Action.</p>`);
+    }
+    else if (RESP.data == "TRUE") {
+        window.location.replace(BASE_URL);
+		// Not sure how to get the below alert working ,,
+		// $(".alert")
+		// 		.css("display", "block")
+		// 		.toggleClass("alert-success")
+		// 		.append(`<p>Account was successfully deleted!</p>`);
+    }
+})

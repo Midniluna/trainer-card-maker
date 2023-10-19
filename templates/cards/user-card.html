@@ -7,12 +7,19 @@
 		<span style="display: block" class="species"
 		>
 		{% if slotted.get(slot).nickname %}
-		<b>{{slotted.get(slot).nickname}}</b>
-		{% else %}
-		{{slotted.get(slot).pokemon.species.capitalize()}}
-		{% endif %}
+        <b>{{slotted.get(slot).nickname}}</b>
+            {% if slotted.get(slot).is_shiny %}
+		    <span style="display: inline-block">✨</span>
+            {% endif%}
+
+        {% else %}
+        {{slotted.get(slot).pokemon.species.capitalize()}}
+            {% if slotted.get(slot).is_shiny %}
+		    <span style="display: inline-block">✨</span>
+            {% endif %} 
+        {% endif %}
 		</span
-		>
+		> 
 		<!-- Only allow editing + viewing of pokemon's id if global user id matches card user's id -->
 		{% if g.user and g.user.id == user.id %} 
 		<small style="font-size: 12px;"><b>ID: #{{slotted.get(slot).id}}</b></small>

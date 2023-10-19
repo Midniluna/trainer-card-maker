@@ -187,8 +187,13 @@ def edit_profile(user_id):
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
     
+    default = '/static/images/default-pic.png'
+    
     form = EditProfileForm(obj=user)
     form.populate_obj(user)
+    # (don't want img_url to show default path if user does not have an icon)
+    if form.img_url.data == default:
+        form.img_url.data = ""
 
     if form.validate_on_submit():
         
@@ -201,7 +206,7 @@ def edit_profile(user_id):
         if img_url != "":
             user.img_url = img_url
         else:
-            user.img_url = '/static/images/default-pic.png'
+            user.img_url = default
 
         user.nickname = form.nickname.data
 
@@ -230,8 +235,23 @@ def confirm_user_delete(user_id):
 
 @app.route('/profile/<int:user_id>/delete', methods=["POST"])
 def delete_user(user_id):
-    print("ehe")
-    return
+    """Route to commit user deletion"""
+    
+    user = User.query.filter_by(id = user_id).one_or_none()
+
+    if not is_user(user_id):
+        return "FALSE"
+    elif user == None:
+            return "FALSE"
+    else:
+        do_logout()
+        card = Card.query.filter_by(user_id = user_id).one_or_none()
+        if CURR_GENNED_KEY in session:
+            session.pop(CURR_GENNED_KEY)
+        db.session.delete(card)
+        db.session.delete(user)
+        db.session.commit()
+        return "TRUE"
 
 # View + Edit Card
 
@@ -358,7 +378,7 @@ def gen_pokemon():
 
     t = datetime.datetime.today()
     today = t.strftime('%m/%d/%Y')
-
+    
     form = GuessPokemonForm()
     can_gen = check_can_gen()
     # User has already caught a pokemon today

@@ -183,7 +183,7 @@ def edit_profile(user_id):
     
     # First check if user exists. If false, redirect to homepage
     user = User.query.get(user_id)
-    if not is_user():
+    if not is_user(user_id):
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
     
@@ -238,7 +238,7 @@ def delete_user(user_id):
 def edit_card(user_id):
     """Allow user to modify their card to their liking"""
 
-    if not is_user():
+    if not is_user(user_id):
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
 

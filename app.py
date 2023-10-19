@@ -403,7 +403,7 @@ def catch_pokemon(genned_id):
 def get_choices():
     """Route to tell PokemonSelectForm what pokemon choices are available via javascript ajax"""
 
-    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+    all_pokemon = Pokemon.sort_pokemon()
     choices = []
     for pokemon in all_pokemon:
         choices.append((pokemon.id, f'#{pokemon.species_dexnum} {pokemon.variant_name}'))

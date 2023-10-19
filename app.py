@@ -183,7 +183,7 @@ def edit_profile(user_id):
     
     # First check if user exists. If false, redirect to homepage
     user = User.query.get(user_id)
-    if not g.user or g.user.id != user_id:
+    if not is_user():
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
     
@@ -211,13 +211,34 @@ def edit_profile(user_id):
     return render_template("/users/edit-user.html", user=user, form=form)
 
 
+@app.route('/profile/<int:user_id>/delete')
+def confirm_user_delete(user_id):
+    """Show page to confirm user deletion"""
+
+    if not is_user(user_id):
+        flash('Unauthorized action.', 'danger')
+        return redirect('/home')
+
+    return render_template('/users/delete-user.html')
+
+
+##############################################
+# CURRENT WIP BELOW. YOU ARE HERE!
+############################################## 
+
+
+@app.route('/profile/<int:user_id>/delete', methods=["POST"])
+def delete_user(user_id):
+    print("ehe")
+    return
+
 # View + Edit Card
 
 @app.route('/card/edit/<int:user_id>')
 def edit_card(user_id):
     """Allow user to modify their card to their liking"""
 
-    if  not g.user or g.user.id != user_id:
+    if not is_user():
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
 
@@ -463,8 +484,10 @@ def check_can_gen():
         genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
         return genned
     
+def is_user(user_id):
+    if not g.user or g.user.id != user_id:
+        return False
+    else:
+        return True
     
-
-##############################################
-# CURRENT WIP BELOW. YOU ARE HERE!
-############################################## 
+    

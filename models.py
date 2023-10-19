@@ -1,6 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select
+from sqlalchemy import select, desc, asc, and_, or_
 from flask import session
 from IPython import embed
 import datetime
@@ -36,6 +36,16 @@ class Pokemon(db.Model):
     sprite = db.Column(db.String, nullable=False)
     shiny_sprite = db.Column(db.String)
     url = db.Column(db.String, nullable=False, unique=True)
+
+    @classmethod
+    def sort_pokemon(cls, val = "dex_asc"): 
+        """Sort pokemon """
+    
+        if val == "dex_asc":
+            pokemon = db.session.query(cls).order_by(cls.species_dexnum.asc()).order_by(cls.id.asc()).all()
+
+        return pokemon
+
     
     @classmethod
     def filter_common(cls):
@@ -72,6 +82,8 @@ class Box(db.Model):
 
     def __repr__(self):
         return f"<User: {self.user_id} -- Genned pokemon id: {self.userpkmn_id}>"
+    
+        
 
 
 
@@ -80,6 +92,9 @@ class Box(db.Model):
 #  ------------------------------------------
 class UserPkmn(db.Model):
     """Instance of a generated pokemon"""
+
+    def __repr__(self):
+        return f"<User Pokemon id={self.id} species={self.pokemon.species}>"
 
     __tablename__ = "users_pokemon"
 
@@ -94,7 +109,25 @@ class UserPkmn(db.Model):
     pokemon = db.relationship('Pokemon')
 
     @classmethod
-    def check_rarity(cls):
+    def sort_pokemon(cls, user_id, val = "oldest"):
+        """Simple function that allows a user's pokemon to be sorted given designated parameters. Requires variables user_id and sort value ('oldest' (default), 'newest', 'az', or 'za')"""
+
+        base_query = db.session.query(cls).join(Box, Box.userpkmn_id == cls.id)
+
+        if val == "oldest": 
+            # Default to "oldest to newest" if val is "oldest" (or no value is specified)
+            boxed = base_query.where(Box.user_id == user_id).order_by(cls.id.asc()).all()
+        if val == "newest":
+            boxed = base_query.where(Box.user_id == user_id).order_by(cls.id.desc()).all()
+        elif val == "az":
+            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).where(Box.user_id == user_id).order_by(Pokemon.species.asc()).order_by(cls.id.desc()).all()
+        elif val == "za":
+            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).where(Box.user_id == user_id).order_by(Pokemon.species.desc()).order_by(cls.id.desc()).all()
+
+        return boxed
+
+    @staticmethod
+    def check_rarity():
         """Check the odds to see if pokemon is common, legendary, or mythic"""
 
         luckynum = random.randint(0,300)
@@ -106,8 +139,8 @@ class UserPkmn(db.Model):
         else: 
             return "common"
 
-    @classmethod
-    def check_shiny(cls):
+    @staticmethod
+    def check_shiny():
         """Check the odds to see if generated pokemon is shiny"""
         # shiny odds are typically 1 in 500 not one in 50, but for the sake of a small app that will not have many users or traffic, I'm increasing the odds to 1 in 50 (2 out of 100)
 

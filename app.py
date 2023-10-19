@@ -159,16 +159,18 @@ def view_profile(user_id):
     """View user profile"""
     card = Card.query.filter(Card.user_id == user_id).one()
 
-    all_boxed = []
+    all_boxed = UserPkmn.sort_pokemon(user_id, "oldest")
 
+    index = 0
     # Sort it so nicknamed pokemon appear first
-    for pokemon in card.user.pokemon:
+    while index < len(all_boxed):
             next =  0
+            pokemon = all_boxed[index]
             if pokemon.nickname is not None:
+                all_boxed.pop(index)
                 all_boxed.insert(next, pokemon)
                 next += 1
-            else:
-                all_boxed.append(pokemon)
+            index += 1
 
     slotted = card.return_slotted()
 
@@ -211,28 +213,29 @@ def edit_profile(user_id):
 
 # View + Edit Card
 
-@app.route('/card/edit/<int:userid>')
-def edit_card(userid):
+@app.route('/card/edit/<int:user_id>')
+def edit_card(user_id):
     """Allow user to modify their card to their liking"""
 
-    if  not g.user or g.user.id != userid:
+    if  not g.user or g.user.id != user_id:
         flash('Unauthorized action.', 'danger')
         return redirect('/home')
 
     else:
-        card = Card.query.filter(Card.user_id == userid).one()
+        card = Card.query.filter(Card.user_id == user_id).one()
         slotted = card.return_slotted()
 
-        all_boxed = []
-
-        # Sort it so nicknamed pokemon appear first
-        for pokemon in card.user.pokemon:
+        all_boxed = UserPkmn.sort_pokemon(user_id, "oldest")
+        index = 0
+    # Sort it so nicknamed pokemon appear first
+        while index < len(all_boxed):
             next =  0
+            pokemon = all_boxed[index]
             if pokemon.nickname is not None:
+                all_boxed.pop(index)
                 all_boxed.insert(next, pokemon)
                 next += 1
-            else:
-                all_boxed.append(pokemon)
+            index += 1
 
         
 
@@ -413,7 +416,7 @@ def new_card():
     selectform = PokemonSelectForm()
     searchform = PokemonSearchForm()
 
-    all_pokemon = Pokemon.query.order_by(asc(Pokemon.id)).all()
+    all_pokemon = Pokemon.sort_pokemon()
 
     choices = [(pokemon.url, f"#{pokemon.species_dexnum} {pokemon.variant_name.capitalize()}") for pokemon in all_pokemon]
     choices.insert(0, ("", "---NONE---"))

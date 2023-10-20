@@ -242,7 +242,7 @@ def delete_user(user_id):
     if not is_user(user_id):
         return "FALSE"
     elif user == None:
-            return "FALSE"
+        return "FALSE"
     else:
         do_logout()
         card = Card.query.filter_by(user_id = user_id).one_or_none()

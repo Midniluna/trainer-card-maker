@@ -103,6 +103,7 @@ class UserPkmn(db.Model):
     is_shiny = db.Column(db.Boolean, nullable = False)
     sprite = db.Column(db.Text)
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
+    favorite = db.Column(db.Boolean, nullable = False, default = False)
 
 
     users = db.relationship("User", secondary='box', passive_deletes=True)

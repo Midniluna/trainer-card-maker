@@ -9,7 +9,7 @@ import forms
 
 from models import db, Pokemon, User, UserPkmn, Box, Card
 
-os.environ['DATABASE_URL'] = "postgresql:///pokepals_test"
+os.environ["DATABASE_URL"] = "postgresql:///pokepals_test"
 
 from app import app, CURR_USER_KEY
 from models import CURR_GENNED_KEY
@@ -17,11 +17,11 @@ from models import CURR_GENNED_KEY
 db.create_all()
 
 # Make Flask errors be real errors, rather than HTML pages with error info
-app.config['TESTING'] = True
+app.config["TESTING"] = True
 
-# This is a bit of hack, but don't use Flask DebugToolbar
-app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
-app.config['WTF_CSRF_ENABLED'] = False
+# This is a bit of hack, but don"t use Flask DebugToolbar
+app.config["DEBUG_TB_HOSTS"] = ["dont-show-debug-toolbar"]
+app.config["WTF_CSRF_ENABLED"] = False
 
 # Now tests go here
 # python3 -m unittest test_user_views.py
@@ -56,7 +56,6 @@ class UserModelsTestCase(TestCase):
 
         password = "password123"
         user = User.signup(nickname = "Sam", username = "username123", email="loremipsum@email.com", password = password)
-        db.session.commit()
 
         self.rawpass = password
         self.testuser = user
@@ -72,25 +71,27 @@ class UserModelsTestCase(TestCase):
             # First confirm that password encryption works
             self.assertNotEqual(self.rawpass, self.testuser.password)
 
-            # Make sure self.testuser is logged out. Then test login route
-            client.post('/logout')
-
-            res = client.post('/login', data={'username' : self.testuser.username, 'password' : self.rawpass}, follow_redirects=True)
-            html = res.get_data(as_text=True)
+            # Try logging in as self.testuser
+            res = client.post("/login", data = {"username" : self.testuser.username, "password" : self.rawpass}, follow_redirects = True)
+            html = res.get_data(as_text = True)
             self.assertEqual(res.status_code, 200)
             self.assertIn("Welcome back", html)
+
+            # Try signing up a new user
+            res2 = client.post("/signup", data = {"username" : "Wubbalubbin", "nickname" : "Wubbzy", "email" : "Wowow_wubbzy@wow.com", "password" : "This is a bad password"})
+            html2 = res.get_data(as_text = True)
+            self.assertEqual(res2.status_code, 302)
+            self.assertIn("logout", html2)
+            self.assertNotIn("login", html2)
             
-            # Now test signup with existing username. Confirm user signup was failed
-            new_user = User(username = 'Wubbalubbin', nickname = 'Wubbzy', email = 'Wowow_wubbzy@wow.com', password = 'This is a bad password')
 
-            res2 = client.post('/signup', data={'username' : self.testuser.username, 'nickname' : new_user.nickname, 'email' :new_user.email, 'password' : new_user.password}, follow_redirects=True)
-            html2 = res2.get_data(as_text=True)
-            self.assertIn("already taken", html2)
-            find_user = User.query.filter_by(id = new_user.id).one_or_none()
-            self.assertIsNone(find_user)
+    def test_username_taken(self):
+        with app.test_client() as client:
+            """Test to confirm users cannot signup with a username that's already taken"""
+            
+            new_user = User(username = "Wubbalubbin", nickname = "Wubbzy", email = "Wowow_wubbzy@wow.com", password = "This is a bad password")
 
-            # Try with valid signup info
-            res3 = client.post('/signup', data={'username' : 'Wubbalubbin', 'nickname' : 'Wubbzy', 'email' : 'Wowow_wubbzy@wow.com', 'password' : 'This is a bad password'})
-            self.assertEqual(res3.status_code, 302)
-            found_user = User.query.filter_by(id = self.testuser.id).one_or_none()
-            self.assertIsNotNone(found_user)
+            res = client.post("/signup", data={"username" : self.testuser.username, "nickname" : new_user.nickname, "email" :new_user.email, "password" : new_user.password}, follow_redirects = True)
+            html = res.get_data(as_text=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("already taken", html)

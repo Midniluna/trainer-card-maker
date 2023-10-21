@@ -1,6 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select, desc, asc, and_, or_
+from sqlalchemy import select, desc, asc, and_, or_, case
 from flask import session
 from IPython import embed
 import datetime
@@ -17,8 +17,6 @@ API_BASE = "https://pokeapi.co/api/v2/"
 # app_context = app.app_context()
 # app_context.push()
 # db.create_all()
-
-CURR_GENNED_KEY = "curr_genned"
 
 
 class Pokemon(db.Model):
@@ -111,19 +109,22 @@ class UserPkmn(db.Model):
 
     @classmethod
     def sort_pokemon(cls, user_id, val = "oldest"):
-        """Simple function that allows a user's pokemon to be sorted given designated parameters. Requires variables user_id and sort value ('oldest' (default), 'newest', 'az', or 'za')"""
+        """Simple function that allows a user's pokemon to be sorted given designated parameters. Requires variables user_id and sort value ('oldest' (default), 'newest', 'az', or 'za')
+        
+        Sorting will always prioritize favorites first, then nicknamed (boolean) pokemon, then inputted sort value."""
 
-        base_query = db.session.query(cls).join(Box, Box.userpkmn_id == cls.id)
+        base_query = db.session.query(cls).join(Box, Box.userpkmn_id == cls.id).where(Box.user_id == user_id).order_by(cls.favorite.desc()).order_by(case([(cls.nickname == None, 1)], else_=0))
 
         if val == "oldest": 
             # Default to "oldest to newest" if val is "oldest" (or no value is specified)
-            boxed = base_query.where(Box.user_id == user_id).order_by(cls.id.asc()).all()
+            # Favorites first, then nicknamed pokemon, then from oldest to newest.
+            boxed = base_query.order_by(cls.id.asc()).all()
         if val == "newest":
-            boxed = base_query.where(Box.user_id == user_id).order_by(cls.id.desc()).all()
+            boxed = base_query.order_by(cls.id.desc()).all()
         elif val == "az":
-            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).where(Box.user_id == user_id).order_by(Pokemon.species.asc()).order_by(cls.id.desc()).all()
+            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).order_by(Pokemon.species.asc()).order_by(cls.id.asc()).all()
         elif val == "za":
-            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).where(Box.user_id == user_id).order_by(Pokemon.species.desc()).order_by(cls.id.desc()).all()
+            boxed = base_query.join(Pokemon, Pokemon.id == cls.pokemon_id).order_by(Pokemon.species.desc()).order_by(cls.id.asc()).all()
 
         return boxed
 
@@ -153,12 +154,13 @@ class UserPkmn(db.Model):
     
 
     # optional inputs for testing only
-    def gen_pokemon(shine = None):
+    def gen_pokemon(user, shine = None):
         """Generate a new pokemon"""
 
         # remove last generated pokemon from the session if exists
-        if CURR_GENNED_KEY in session:
-            session.pop(CURR_GENNED_KEY)
+        if user.last_genned_id is not None:
+            user.last_genned_id = None
+            db.session.commit()
 
         rarity = UserPkmn.check_rarity()
 

@@ -165,6 +165,13 @@ h6 {
 	margin-left: 20px;
 	margin-right: 20px;
 	text-align: center;
+	position: relative;
+}
+
+.fa-star {
+	position: absolute;
+	right: 0;
+	cursor: pointer;
 }
 
 .pokemon-image {

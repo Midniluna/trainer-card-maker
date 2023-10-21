@@ -25,3 +25,8 @@
 	</div>
 </div>
 {% endblock %}
+{% block script %}
+{% if g.user and g.user.id == user.id %}
+<script src="{{url_for('static', filename='fave-pkmn.js')}}"></script>
+{% endif %}
+{% endblock %}

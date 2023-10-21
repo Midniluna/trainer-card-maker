@@ -13,7 +13,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from IPython import embed
 
 # from forms import 
-from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card, CURR_GENNED_KEY
+from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card
 from forms import SignupForm, LoginForm, EditProfileForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
 
 CURR_USER_KEY = "curr_user"
@@ -160,17 +160,6 @@ def view_profile(user_id):
 
     all_boxed = UserPkmn.sort_pokemon(user_id, "oldest")
 
-    # Sort it so nicknamed pokemon appear first
-    index = 0
-    while index < len(all_boxed):
-            next =  0
-            pokemon = all_boxed[index]
-            if pokemon.nickname is not None:
-                all_boxed.pop(index) #remove pokemon from original index
-                all_boxed.insert(next, pokemon) #move it to first index or next index after previously moved one
-                next += 1 
-            index += 1
-
     slotted = card.return_slotted()
 
     return render_template('users/profile.html', user = card.user, all_boxed = all_boxed, slotted = slotted)
@@ -227,11 +216,6 @@ def confirm_user_delete(user_id):
     return render_template('/users/delete-user.html')
 
 
-##############################################
-# CURRENT WIP BELOW. YOU ARE HERE!
-############################################## 
-
-
 @app.route('/profile/<int:user_id>/delete', methods=["POST"])
 def delete_user(user_id):
     """Route to commit user deletion"""
@@ -245,8 +229,6 @@ def delete_user(user_id):
     else:
         do_logout()
         card = Card.query.filter_by(user_id = user_id).one_or_none()
-        if CURR_GENNED_KEY in session:
-            session.pop(CURR_GENNED_KEY)
         db.session.delete(card)
         db.session.delete(user)
         db.session.commit()
@@ -333,7 +315,7 @@ def handle_card_delete(userid):
 
 @app.route('/profile/<int:user_id>/edit/<int:userpkmn_id>', methods=["GET", "POST"])
 def edit_pokemon(user_id, userpkmn_id):
-    """Allow user to customize their pokemon"""
+    """Allow user to customize their pokemon's nickname"""
 
     pokemon = UserPkmn.query.get(userpkmn_id)
     
@@ -362,7 +344,20 @@ def edit_pokemon(user_id, userpkmn_id):
         # return render_template("users/login.html", form=form)
         
 
+@app.route('/<int:userpkmn_id>/fave', methods=["PATCH"])
+def fave_pokemon(userpkmn_id):
+    """Allow user to customize their pokemon"""
+    
+    pokemon = UserPkmn.query.get(userpkmn_id)
 
+    if pokemon.favorite:
+        pokemon.favorite = False
+    else:
+        pokemon.favorite = True
+        
+    db.session.commit()
+
+    return "Success!"
 
 # -------------------------------------------------
 # ------ POKEMON CATCHING/GENERATING ROUTES -------
@@ -388,7 +383,7 @@ def gen_pokemon():
     # User has generated a pokemon today but has not caught it
     elif isinstance(can_gen, UserPkmn):
         flash("You have already generated a pokemon today! You may re-attempt to catch it.", 'danger')
-        can_gen = UserPkmn.query.get(session["curr_genned"])
+        can_gen = UserPkmn.query.get(user.last_genned_id)
         species = Pokemon.query.get(can_gen.pokemon_id).species
 
         return render_template('pokemon/generate.html', genned = can_gen, species = species, user=user, form = form)
@@ -397,18 +392,18 @@ def gen_pokemon():
     elif can_gen == True:
 
         # First check if the user still has a previously uncaught pokemon. If so, delete the pokemon from the database. Might mess around and change this later to add a "pokemon orphanage" or something where unclaimed pokemon can be caught, perhaps also daily. would mean maybe adding a "filter orphaned" function to the UserPkmn model... hmmn...
-        if CURR_GENNED_KEY in session:
-            last_genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
+        if user.last_genned_id is not None:
+            last_genned = UserPkmn.query.get(user.last_genned_id)
             db.session.delete(last_genned)
             db.session.commit()
         
         # For guaranteed shiny generation, insert True into gen_pokemon() function
-        genned = UserPkmn.gen_pokemon()
+        genned = UserPkmn.gen_pokemon(user)
         species = Pokemon.query.get(genned.pokemon_id).species
 
-        g.user.last_genned = today
+        user.last_genned = today
+        user.last_genned_id = genned.id
         db.session.commit()
-        session[CURR_GENNED_KEY] = genned.id
         
         return render_template('pokemon/generate.html', genned = genned, species = species, user = g.user, form = form)
     
@@ -417,8 +412,8 @@ def gen_pokemon():
 def reset_pokemon():
     """Deletes currently genned pokemon """
     g.user.last_genned = None
+    g.user.last_genned_id = None
     db.session.commit()
-    session.pop(CURR_GENNED_KEY)
     return redirect('/generate')
 
 
@@ -431,7 +426,8 @@ def catch_pokemon(genned_id):
     response = g.user.catch_pokemon(g.user, genned, input)
 
     if response == "Success":
-        session.pop(CURR_GENNED_KEY)
+        g.user.last_genned_id = None
+        db.session.commit()
 
     return response
 
@@ -501,7 +497,7 @@ def check_can_gen():
     
     # If user hasn't caught a pokemon today but has generated a pokemon today, return the uncaught pokemon to allow user to reattempt to catch it
     elif g.user.last_genned == today:
-        genned = UserPkmn.query.get(session[CURR_GENNED_KEY])
+        genned = UserPkmn.query.get(g.user.last_genned_id)
         return genned
     
 def is_user(user_id):

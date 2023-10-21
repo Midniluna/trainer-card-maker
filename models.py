@@ -26,16 +26,16 @@ class Pokemon(db.Model):
 
     __tablename__ = 'pokemon'
 
-    id = db.Column(db.Integer, primary_key=True)
-    species = db.Column(db.Text, nullable=False)
+    id = db.Column(db.Integer, primary_key = True)
+    species = db.Column(db.Text, nullable = False)
     # National dex number of that species, regardless of regional variance
-    species_dexnum = db.Column(db.String, nullable=True)
-    variant_name = db.Column(db.String, nullable=False)
-    is_legendary = db.Column(db.Boolean, nullable=False)
-    is_mythical = db.Column(db.Boolean, nullable=False)
-    sprite = db.Column(db.String, nullable=False)
+    species_dexnum = db.Column(db.String, nullable = True)
+    variant_name = db.Column(db.String, nullable = False)
+    is_legendary = db.Column(db.Boolean, nullable = False)
+    is_mythical = db.Column(db.Boolean, nullable = False)
+    sprite = db.Column(db.String, nullable = False)
     shiny_sprite = db.Column(db.String)
-    url = db.Column(db.String, nullable=False, unique=True)
+    url = db.Column(db.String, nullable = False, unique = True)
 
     @classmethod
     def sort_pokemon(cls, val = "dex_asc"): 
@@ -98,15 +98,15 @@ class UserPkmn(db.Model):
 
     __tablename__ = "users_pokemon"
 
-    id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.String(12), nullable=True, default=None)
+    id = db.Column(db.Integer, primary_key = True)
+    nickname = db.Column(db.String(12), nullable = True, default = None)
     is_shiny = db.Column(db.Boolean, nullable = False)
     sprite = db.Column(db.Text)
     pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'))
     favorite = db.Column(db.Boolean, nullable = False, default = False)
 
 
-    users = db.relationship("User", secondary='box', passive_deletes=True)
+    users = db.relationship("User", secondary = 'box', passive_deletes = True)
     pokemon = db.relationship('Pokemon')
 
     @classmethod
@@ -235,21 +235,21 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    nickname = db.Column(db.Text, nullable=False)
-    username = db.Column(db.Text, nullable=False, unique=True)
-    email = db.Column(db.Text, nullable = False, unique=True)
-    password = db.Column(db.Text, nullable=False)
-    bio = db.Column(db.String, nullable=True)
+    id = db.Column(db.Integer, primary_key = True)
+    nickname = db.Column(db.Text, nullable = False)
+    username = db.Column(db.Text, nullable = False, unique = True)
+    email = db.Column(db.Text, nullable = False, unique = True)
+    password = db.Column(db.Text, nullable = False)
+    bio = db.Column(db.String, nullable = True)
     img_url = db.Column(db.Text, default = '/static/images/default-pic.png')
+    # last_catch and last_genned are dates... I think I tried to use the Date type for this but I was having troubles with it
     last_catch = db.Column(db.Text, default = None)
     last_genned = db.Column(db.Text, default = None)
+    last_genned_id = db.Column(db.Integer, nullable = True, )
 
     # This user's pokemon. pokemon is deleted upon user deletion, but still may consider revoking that to allow for some type of pokemon-orphanage type deal where users can adopt orphaned pokemon.
     pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True)
-    card = db.relationship("Card", back_populates="user" , cascade="all, delete-orphan")
-
-    # slotted = db.relationship("User", secondary="card", primaryjoin=(Card.user_id))
+    card = db.relationship("Card", back_populates="user" , cascade="all, delete, delete-orphan")
 
     @classmethod
     def signup(cls, username, nickname, password, email):
@@ -258,10 +258,10 @@ class User(db.Model):
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
-            nickname=nickname,
-            username=username,
-            email=email,
-            password=hashed_pwd
+            nickname = nickname,
+            username = username,
+            email = email,
+            password = hashed_pwd
         )
 
         db.session.add(user)
@@ -343,7 +343,7 @@ class Card(db.Model):
     # HOLY SHIT I DID IT ACTUALLY? THANK YOU STACK OVERFLOW
     # OKAY. 
     def update(self, kwargs):
-        """Simply submit a dictionary where they Keys are column names (i.e. 'slot1_id') and they Values are the desired userpkmn ids"""
+        """Simply submit a dictionary where they Keys are column names (i.e. 'slot1_id') and the Values are the desired userpkmn ids"""
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)

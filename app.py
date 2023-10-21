@@ -126,8 +126,9 @@ def login():
         
         if user:
             do_login(user)
+            next_page = request.args.get('next')
             flash(f"Welcome back, {user.username}!", "success")
-            return redirect("/home")
+            return redirect(next_page) if next_page else redirect(url_for("homepage"))
             
         flash("Invalid Username or Password", "danger")
 
@@ -152,7 +153,7 @@ def logout():
 
 
 @app.route('/profile/<int:user_id>')
-# @login_required
+@login_required
 def view_profile(user_id):
     """View user profile"""
     card = Card.query.filter(Card.user_id == user_id).one()

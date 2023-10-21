@@ -26,10 +26,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///pokepals'))
-    ### comment top part and uncomment bottom part, save, and run seed file again to seed the pokepals_test database
-    # os.environ.get('DATABASE_URL', 'postgresql:///pokepals_test'))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -106,6 +103,7 @@ def signup():
             db.session.commit()
             
         except IntegrityError:
+            db.session.rollback()
             flash("Username or email is already taken", 'danger')
             return render_template('users/signup.html', form = form)
             

@@ -51,7 +51,12 @@
 			{{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
 			'hidden' %}
 			<p>
-				{{field.label}} {{field(class="form-control")}}
+				{{field.label}}
+				<div class="hint-container">
+					<button class="btn btn-warning hint-btn" data-species-name="{{species}}">Show hint?</button>
+					<span class="show-hint"></span>
+				</div>
+				{{field(class="form-control")}}
 				<small
 					>Hint: Only enter the pokemon's species name (i.e. "Pikachu",
 					"Raticate", "Wiglett"). You do not need to add region names (i.e.
@@ -64,9 +69,9 @@
 			<button type="submit" class="btn btn-warning">Submit</button>
 		</form>
 		<br>
-		<form action="{{url_for('reset_pokemon')}}" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">
+		<!-- <form action="{{url_for('reset_pokemon')}}" method="POST" style="text-align: center; margin-left: auto; margin-right: auto">
 			<button class="btn">Reset</button>
-		</form>
+		</form> -->
 	</div>
 </div>
 <div

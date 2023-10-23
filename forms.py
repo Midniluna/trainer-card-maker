@@ -1,7 +1,7 @@
 import requests
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, PasswordField, TextAreaField
-from wtforms.validators import InputRequired, Email, Length, Optional
+from wtforms.validators import InputRequired, Email, Length, Optional, EqualTo
 
 from sqlalchemy import asc
 
@@ -13,7 +13,8 @@ class SignupForm(FlaskForm):
     username = StringField('Enter Username', validators=[InputRequired()])
     nickname = StringField('Enter a nickname', validators=[InputRequired()])
     email = StringField('Enter e-mail', validators=[InputRequired(), Email()])
-    password = PasswordField('Enter password', validators=[InputRequired(), Length(min=6)], render_kw={'placeholder': 'Must be at least 6 characters'})
+    password = PasswordField('Enter password', validators=[InputRequired(), Length(min=6)], render_kw ={'placeholder': 'Must be at least 6 characters'})
+    confirm = PasswordField('Confirm password', validators=[InputRequired(), EqualTo('password', message ='Passwords must match.')], render_kw={'placeholder': 'Must match password'})
 
 class LoginForm(FlaskForm):
     """User login form"""
@@ -24,6 +25,7 @@ class EditProfileForm(FlaskForm):
     """Form for editing user details"""
     nickname = StringField('Enter new nickname', validators=[Optional()], render_kw={"placeholder" : "Nickname (Optional)"})
     img_url = StringField('Profile picture URL', validators=[Optional()], render_kw={"placeholder" : "URL (Optional)"})
+    bio = TextAreaField("Tell us about yourself", render_kw={"placeholder" : "E.x. What is your favorite pokemon? What was your first pokemon game?"})
 
 class GuessPokemonForm(FlaskForm):
     """Form for guessing generated pokemon"""

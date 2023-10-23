@@ -62,6 +62,42 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 	return;
 });
 
+$(".hint-btn").on("click", function(evt) {
+	evt.preventDefault()
+
+	const SHOW_HINT = $(this).siblings(".show-hint");
+	
+	if (SHOW_HINT.css('display') != 'none') {
+		return;
+	}
+	else {
+		let species = $(this).attr("data-species-name");
+		species = capitalize(species);
+		console.log(species)
+		
+		// If the pokemon's name is only 6 or less letters long, show the first 3 letters. Else, show the first 4
+		let visible = 0
+		// species.slice(0, 4)
+		if (species.length <= 6) {
+			visible = 3;
+		}
+		else {
+			visible = 4;
+		}
+		
+		hint = species.slice(0, visible);
+		numsToHide = species.length - hint.length
+		for ( i = 0; i < numsToHide; i++) {
+			hint += '_'
+		}
+
+		
+		SHOW_HINT.text(hint);
+		SHOW_HINT.css('display', 'inline');
+	}
+
+})
+
 
 
 // --------------------------------------------------------

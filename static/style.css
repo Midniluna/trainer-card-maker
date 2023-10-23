@@ -22,6 +22,21 @@ h6 {
 	color: #3F3025;
 }
 
+.hint-container {
+	margin-bottom: 24px;
+}
+
+button.hint {
+	display: block;
+}
+
+span.show-hint {
+	display: none;
+	margin-left: 1em;
+	font-size: large;
+	font-weight: bold;
+}
+
 /* .main-content {
 	padding: 15px;
 } */
@@ -56,6 +71,12 @@ h6 {
     height:100%;
     object-position: center;
     object-fit: cover;
+}
+
+.user-bio-content {
+	display: inline-block;
+	max-width: 920px;
+	font-size: 1.1rem;
 }
 
 .flex-wrap {
@@ -94,6 +115,14 @@ h6 {
 
 .local-card-form-container {
 	width: 600px;
+}
+
+.space-form {
+	padding: 10px;
+}
+
+.form-error {
+	color: red;
 }
 
 .card-container {

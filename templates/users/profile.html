@@ -10,6 +10,10 @@
 			style="margin: auto; display: block"
 		/>
 	</div>
+	{% if user.bio != '' %}
+	<h1>Bio: </h1>
+	<span class="user-bio-content">{{user.bio}}</span>
+	{% endif %}
 	<hr />
 	<h1>{{(user.username).capitalize()}}'s Trainer Card</h1>
 

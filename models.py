@@ -11,13 +11,6 @@ db = SQLAlchemy()
 
 API_BASE = "https://pokeapi.co/api/v2/"
 
-# I ALWAYS forget this. to create all tables;
-# go in ipython and run %run models.py
-# from app import app
-# app_context = app.app_context()
-# app_context.push()
-# db.create_all()
-
 
 class Pokemon(db.Model):
     """Collection of basic info about all pokemon in the known pokedex"""
@@ -157,7 +150,7 @@ class UserPkmn(db.Model):
     def gen_pokemon(user, shine = None):
         """Generate a new pokemon"""
 
-        # remove last generated pokemon from the session if exists
+        # reset user's last-genned pokemon id. Pokemon is deleted from database in app.py /generate route
         if user.last_genned_id is not None:
             user.last_genned_id = None
             db.session.commit()
@@ -181,14 +174,6 @@ class UserPkmn(db.Model):
         sprite = None
         is_shiny = UserPkmn.check_shiny()
 
-        # print(f"Does shiny sprite exist? : {bool(pokemon.shiny_sprite)}")
-        # ^ show whether or not there's a shiny sprite
-
-        ###################### UNCOMMENT THIS SECTION FOR TESTING ######################
-                # edit: actually I honestly don't need to uncomment it at all, I
-                    
-        # if "shine" input is true/exists, guarantee genned pokemon is shiny unless there is no shiny sprite. This section is solely for testing purposes
-
         if shine:
             if pokemon.shiny_sprite is not None:
                 sprite = pokemon.shiny_sprite
@@ -206,16 +191,13 @@ class UserPkmn(db.Model):
 
         if pokemon.shiny_sprite is not None and is_shiny:
             sprite = pokemon.shiny_sprite
-            # print("Shiny!")
         else: 
             sprite = pokemon.sprite
-            # print("Not shiny")
         
         genned = UserPkmn(is_shiny = is_shiny, sprite = sprite, pokemon_id = pokemon.id)
         db.session.add(genned)
         db.session.commit()
         print(f"Pokemon: {pokemon}. Shiny? {is_shiny}. Sprite: {sprite}")
-        # Do NOT add to session or commit yet; if user cannot correctly guess pokemon, pokemon is not added into database
 
         return genned
     
@@ -247,7 +229,7 @@ class User(db.Model):
     # last_catch and last_genned are dates... I think I tried to use the Date type for this but I was having troubles with it
     last_catch = db.Column(db.Text, default = None)
     last_genned = db.Column(db.Text, default = None)
-    last_genned_id = db.Column(db.Integer, nullable = True, )
+    last_genned_id = db.Column(db.Integer, nullable = True)
 
     # This user's pokemon. pokemon is deleted upon user deletion, but still may consider revoking that to allow for some type of pokemon-orphanage type deal where users can adopt orphaned pokemon.
     pokemon = db.relationship("UserPkmn", secondary="box", back_populates="users", cascade="all, delete, delete-orphan", single_parent=True)
@@ -317,10 +299,6 @@ class User(db.Model):
 
 class Card(db.Model):
     """Trainer card / User's Party Pokemon ; User and their 6 chosen display pokemon"""
-
-    # Note: I don't really like how busy this looks, but with my previous iteration, it would have been incredibly hard to keep track of which pokemon is in which slot of the trainer card, and would have likely required a lot more logic in either javascript or Python. I know it's something I could add to the session, but my concern with that is that if the session was cleared somehow (users can manually clear the session... I don't know if there are other things that can?), I wouldn't want their card wiped, so the best solution is to keep it in the database. This way it's also easier to make sure the user does not have the ability to slot more than 6 pokemon at a time, so I don't have to add any logic for that.
-    # It just makes the most sense
-
     __tablename__ = 'card'
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), primary_key=True)
@@ -342,15 +320,12 @@ class Card(db.Model):
 
         return allslotted
     
-    # HOLY SHIT I DID IT ACTUALLY? THANK YOU STACK OVERFLOW
-    # OKAY. 
+    # I thank StackOverflow every day for giving me this solution for updating this model
     def update(self, kwargs):
         """Simply submit a dictionary where they Keys are column names (i.e. 'slot1_id') and the Values are the desired userpkmn ids"""
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-                
-    # Ohhhhh my god. I can't believe that worked. This literally SAVED MY LIFE my code is GORGEOUS now I am in TEARS
 
     def __repr__(self):
         return f"<user id: {self.user_id}, slotted pokemon: {self.return_slotted()}>"

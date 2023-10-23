@@ -167,7 +167,7 @@ def view_profile(user_id):
 
 @app.route('/profile/<int:user_id>/edit', methods=["GET", "POST"])
 def edit_profile(user_id):
-    """View user profile"""
+    """Edit user profile"""
     
     # First check if user exists. If false, redirect to homepage
     user = User.query.get(user_id)
@@ -197,6 +197,7 @@ def edit_profile(user_id):
             user.img_url = default
 
         user.nickname = form.nickname.data
+        user.bio = form.bio.data 
 
         db.session.commit()
         # refresh the page
@@ -397,7 +398,7 @@ def gen_pokemon():
             db.session.delete(last_genned)
             db.session.commit()
         
-        # For guaranteed shiny generation, insert True into gen_pokemon() function
+        # For guaranteed shiny generation, insert True into gen_pokemon() function after the user variable.
         genned = UserPkmn.gen_pokemon(user)
         species = Pokemon.query.get(genned.pokemon_id).species
 

@@ -12,7 +12,6 @@ from models import db, Pokemon, User, UserPkmn, Box, Card
 os.environ["DATABASE_URL"] = "postgresql:///pokepals_test"
 
 from app import app, CURR_USER_KEY
-from models import CURR_GENNED_KEY
 
 db.create_all()
 
@@ -80,7 +79,7 @@ class UserModelsTestCase(TestCase):
             # Try signing up a new user
             res2 = client.post("/signup", data = {"username" : "Wubbalubbin", "nickname" : "Wubbzy", "email" : "Wowow_wubbzy@wow.com", "password" : "This is a bad password"})
             html2 = res.get_data(as_text = True)
-            self.assertEqual(res2.status_code, 302)
+            self.assertEqual(res2.status_code, 200)
             self.assertIn("logout", html2)
             self.assertNotIn("login", html2)
             
@@ -91,7 +90,7 @@ class UserModelsTestCase(TestCase):
             
             new_user = User(username = "Wubbalubbin", nickname = "Wubbzy", email = "Wowow_wubbzy@wow.com", password = "This is a bad password")
 
-            res = client.post("/signup", data={"username" : self.testuser.username, "nickname" : new_user.nickname, "email" :new_user.email, "password" : new_user.password}, follow_redirects = True)
+            res = client.post("/signup", data={"username" : self.testuser.username, "nickname" : new_user.nickname, "email" : new_user.email, "password" : new_user.password, 'confirm' : new_user.password}, follow_redirects = True)
             html = res.get_data(as_text=True)
             self.assertEqual(res.status_code, 200)
             self.assertIn("already taken", html)

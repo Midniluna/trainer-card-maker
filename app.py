@@ -16,6 +16,8 @@ from IPython import embed
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card
 from forms import SignupForm, LoginForm, EditProfileForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
 
+from seed import get_all_pkmn
+
 CURR_USER_KEY = "curr_user"
 
 API_BASE = "https://pokeapi.co/api/v2/"
@@ -26,7 +28,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://lmrldsfjzawfsp:c80aecc52596b5aeb69f16e7fbdc11db9655f8e677e5661c37bcd80fb025a996@ec2-54-208-11-146.compute-1.amazonaws.com:5432/dc54h6gvue8mlf"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -36,6 +38,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put
 # toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+get_all_pkmn()
 
 # My only issue is that wil all of this, when I add @login_required in a route, it just brings me to a login route regardless of whether or not I'm logged in, and when I DO login, it redirects to the homepage, and when I try to get back to the route requiring the login, it makes me login again, never letting me into the route I want to get into. I don't really understand why
 @login_manager.user_loader

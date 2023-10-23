@@ -70,5 +70,3 @@ def get_all_pkmn():
                 print(f'species: {new_mon.species} variant: {new_mon.variant_name}  id: {new_mon.id}; ADDED')
                 print(f"Sprites: {sprite} ------------ {shiny_sprite}")
 
-
-get_all_pkmn()

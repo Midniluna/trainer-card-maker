@@ -23,7 +23,7 @@ app.config["DEBUG_TB_HOSTS"] = ["dont-show-debug-toolbar"]
 app.config["WTF_CSRF_ENABLED"] = False
 
 # Now tests go here
-# python3 -m unittest test_user_views.py
+# python3 -m unittest test_user.py
 
 
 
@@ -93,4 +93,29 @@ class UserModelsTestCase(TestCase):
             res = client.post("/signup", data={"username" : self.testuser.username, "nickname" : new_user.nickname, "email" : new_user.email, "password" : new_user.password, 'confirm' : new_user.password}, follow_redirects = True)
             html = res.get_data(as_text=True)
             self.assertEqual(res.status_code, 200)
-            self.assertIn("already taken", html)
+            self.assertIn("already taken", html)  
+        
+    def test_edit_user(self):
+        with app.test_client() as client: 
+            """Testing user editing route"""
+
+            # Add user to database and commit so that user has an id and card exists. signup route didn't do this for some reason
+            db.session.rollback()
+            user = User(username = "Wubbalubbin", nickname = "Wubbzy", email = "Wowow_wubbzy@wow.com", password = "This is a bad password")
+            db.session.add(user)
+            db.session.commit()
+            card = Card(user_id = user.id) 
+            db.session.add(card)
+            db.session.commit()
+
+            res = client.get(f'profile/{user.id}', follow_redirects = True)
+            html = res.get_data(as_text=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertNotIn('Edit card', html)
+
+            # User isn't being logged in.... argh. Navbar is still showing "login" and "signup" tabs, and Edit Card button for user profile isn't showing. What am I doing wrong?
+            client.post("/login", data = {"username" : user.username, "password" : self.rawpass}, follow_redirects = True)
+            res2 = client.get(f'profile/{user.id}', follow_redirects = True)
+            html = res2.get_data(as_text=True)
+            self.assertEqual(res2.status_code, 200)
+            self.assertIn('Edit', html)

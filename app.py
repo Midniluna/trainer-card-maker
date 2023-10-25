@@ -4,7 +4,8 @@ import datetime
 # import collections
 
 from flask import Flask, render_template, flash, redirect, request, session, g, url_for, jsonify
-from flask_login import LoginManager, login_required
+from functools import wraps
+from flask_login import LoginManager
 
 from sqlalchemy import and_, or_, asc, desc, select
 from sqlalchemy.exc import IntegrityError
@@ -16,8 +17,6 @@ from IPython import embed
 from models import db, connect_db, Pokemon, User, UserPkmn, Box, Card
 from forms import SignupForm, LoginForm, EditProfileForm, EditUserPkmnForm, GuessPokemonForm, PokemonSelectForm, PokemonSearchForm
 
-from seed import get_all_pkmn
-
 CURR_USER_KEY = "curr_user"
 
 API_BASE = "https://pokeapi.co/api/v2/"
@@ -28,7 +27,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://lmrldsfjzawfsp:c80aecc52596b5aeb69f16e7fbdc11db9655f8e677e5661c37bcd80fb025a996@ec2-54-208-11-146.compute-1.amazonaws.com:5432/dc54h6gvue8mlf"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
@@ -38,9 +38,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "What do people even put
 # toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-get_all_pkmn()
 
-# My only issue is that wil all of this, when I add @login_required in a route, it just brings me to a login route regardless of whether or not I'm logged in, and when I DO login, it redirects to the homepage, and when I try to get back to the route requiring the login, it makes me login again, never letting me into the route I want to get into. I don't really understand why
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id) or None
@@ -65,6 +64,18 @@ def do_logout():
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+
+
+def login_required(view_func):
+  @wraps(view_func)
+  def wrapper(*args, **kwargs):
+      if CURR_USER_KEY in session:
+          return view_func(*args, **kwargs)
+      else:
+          flash('You need to log in to access this page.', 'danger')
+          return redirect(url_for('login', next=request.url))
+  
+  return wrapper
 
 
 @app.errorhandler(404)
@@ -128,13 +139,21 @@ def login():
                                          password=form.password.data)
         
         if user:
-            do_login(user)
-            next_page = request.args.get('next')
-            flash(f"Welcome back, {user.username}!", "success")
-            return redirect(next_page) if next_page else redirect(url_for("homepage"))
+          do_login(user)
+          next_page = session.get('next', None)  # Retrieve the "next" parameter from session
+  
+          if next_page:
+              session.pop('next')  # Remove "next" from the session
+          else:
+              next_page = url_for('homepage')  # Default to the homepage if "next" is not provided
+  
+          flash(f"Welcome back, {user.username}!", "success")
+          return redirect(next_page)
             
         flash("Invalid Username or Password", "danger")
-
+    # Store the "next" parameter in the session during the GET request
+    session['next'] = request.args.get('next', None)
+      
     return render_template("users/login.html", form=form)
     
 @app.route('/logout')
@@ -156,7 +175,6 @@ def logout():
 
 
 @app.route('/profile/<int:user_id>')
-# @login_required
 def view_profile(user_id):
     """View user profile"""
     card = Card.query.filter(Card.user_id == user_id).one()
@@ -169,6 +187,7 @@ def view_profile(user_id):
 
 
 @app.route('/profile/<int:user_id>/edit', methods=["GET", "POST"])
+@login_required
 def edit_profile(user_id):
     """Edit user profile"""
     
@@ -210,6 +229,7 @@ def edit_profile(user_id):
 
 
 @app.route('/profile/<int:user_id>/delete')
+@login_required
 def confirm_user_delete(user_id):
     """Show page to confirm user deletion"""
 

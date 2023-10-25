@@ -11,14 +11,14 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 	evt.preventDefault();
 
 	// Clear the error message contents + hide the error message element
-	$(".alert").empty();
+	$("#alert-guess-mon").empty();
 
 	// remove any previous error message styling
-	if ($(".alert").hasClass("alert-danger")) {
-		$(".alert").toggleClass("alert-danger");
+	if ($("#alert-guess-mon").hasClass("alert-danger")) {
+		$("#alert-guess-mon").toggleClass("alert-danger");
 	}
-	if ($(".alert").hasClass("alert-success")) {
-		$(".alert").toggleClass("alert-success");
+	if ($("#alert-guess-mon").hasClass("alert-success")) {
+		$("#alert-guess-mon").toggleClass("alert-success");
 	}
 
 	let species = "";
@@ -40,7 +40,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 			$("#species").val() == "";
 
 			// error message content is always cleared at the start, so always re-append error when catch-attempt is failed
-			$(".alert")
+			$("#alert-guess-mon")
 				.css("display", "block")
 				.toggleClass("alert-danger")
 				.append(`<p>That is the incorrect pokemon. Check your spelling!</p>`);
@@ -48,7 +48,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 			$("#species").val() == "";
 			// window.location.replace("http://localhost:5000/home");
 			$(".genned-mon-content").empty();
-			$(".alert")
+			$("#alert-guess-mon")
 				.toggleClass("alert-success")
 				.css("display", "block")
 				.append(`<p>Congrats! You've caught a(n) ${species}! Would you like to name it? <a href='profile/${USER_ID}/edit/${GENNED_ID}'>[Yes]</a></p>`);

@@ -29,7 +29,7 @@ login_manager.login_view = 'login'
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://pokepals_user:JvwzRLRzQIEdoy8FiRpddaCcXd8bZrw3@dpg-cksndgpf3gac73d1n690-a/pokepals')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://pokepals_user:JvwzRLRzQIEdoy8FiRpddaCcXd8bZrw3@dpg-cksndgpf3gac73d1n690-a.ohio-postgres.render.com/pokepals')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False

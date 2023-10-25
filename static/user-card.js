@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000'
+const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com/'
 
 function capitalize(str){
 	return str.charAt(0).toUpperCase() + str.slice(1);

@@ -27,9 +27,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///pokepals')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres://qcvedcmy:2epX5_nboFuk_-AfwI4HMCCR2D55AJ1p@bubble.db.elephantsql.com/qcvedcmy')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgres://qcvedcmy:2epX5_nboFuk_-AfwI4HMCCR2D55AJ1p@bubble.db.elephantsql.com/qcvedcmy')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False

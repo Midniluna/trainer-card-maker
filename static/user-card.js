@@ -218,33 +218,34 @@ $(".select-mon").on("click", async function (evt) {
 				const SLOT2 = "None" 
 				const PKMN2_ID = "None" 
 
+				const IMG = $ACTIVE.parent().find(".pokemon-image");
+				const NICKNAME = $ACTIVE.parent().find(".nickname");
+				const SPECIES = $ACTIVE.parent().find(".species");
+				const ID = $ACTIVE.parent().find(".pkmnID");
+				
+				// Append delete button if adding a pokemon into a blank slot
+				const $DELETE_BTN = $(`<button class="btn btn-danger" data-slot-id="${SLOT}">Remove</button>`)
+				
+				// If there's 
+				if (SPECIES.text() == "No pokemon") {
+					$ACTIVE.parent().find("span.delete-slot").append($DELETE_BTN);
+				}
+				
 				const RESP = await axios.post(`${BASE_URL}/card/edit/${USER_ID}/submit`, {
 					slot : SLOT,
 					slot2 : SLOT2,
 					pkmn_id : PKMN_ID,
 					pkmn2_id : PKMN2_ID,
 				});
-				const IMG = $ACTIVE.parent().find(".pokemon-image");
-				const NICKNAME = $ACTIVE.parent().find(".nickname");
-				const SPECIES = $ACTIVE.parent().find(".species");
-				const ID = $ACTIVE.parent().find(".pkmnID");
-
-				// Append delete button if adding a pokemon into a blank slot
-				const $DELETE_BTN = $(`<button class="btn btn-danger" data-slot-id="${SLOT}">Remove</button>`)
-
-				// If there's 
-				if (SPECIES.text() == "No pokemon") {
-					$ACTIVE.parent().find("span.delete-slot").append($DELETE_BTN);
-					// $delete_btn.insertAfter($active);
-				}
-	
+				
 				IMG.attr("src", RESP.data.sprite);
 				NICKNAME.text(`${RESP.data.nickname}`);
 				SPECIES.text(`${RESP.data.species}`);
 				ID.text(`ID: #${PKMN_ID}`);
 				$ACTIVE.attr("data-userpkmn-id", PKMN_ID)
-
+				
 				$ACTIVE.toggleClass("active")
+				
 
 			}
 			
@@ -263,23 +264,24 @@ $(".delete-slot").on("click", async function (evt) {
 	const SLOT_ID = $TARGET.attr("data-slot-id")
 	const USER_ID = $(".card-container").attr("data-user-id")
 
-	await axios.post(`${BASE_URL}/card/edit/${USER_ID}/delete`, {
-			slot_id : SLOT_ID
-	})
-
-	
 	const IMG = $TARGET.parent().find(".pokemon-image");
 	const NICKNAME = $TARGET.parent().find(".nickname");
 	const SPECIES = $TARGET.parent().find(".species");
 	const ID = $TARGET.parent().find(".pkmnID");
 
-	IMG.attr("src", "http://localhost:5000/static/images/no-symbol.png");
+	IMG.attr("src", `${BASE_URL}/static/images/no-symbol.png`);
 	NICKNAME.text("(nickname)");
 	SPECIES.text("No pokemon");
 	ID.text(`ID: Null`);
 	$TARGET.attr("data-userpkmn-id", "")
 
 	$(this).find(".btn-danger").remove()
+
+	await axios.post(`${BASE_URL}/card/edit/${USER_ID}/delete`, {
+			slot_id : SLOT_ID
+	})
+
+	
 })
 
 $("#delete-user-form").on("submit", async function(evt) {

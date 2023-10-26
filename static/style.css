@@ -22,6 +22,29 @@ h6 {
 	color: #3F3025;
 }
 
+.homepage-sections {
+	justify-content: center;
+	height: 100vh;
+	background-image: url("/static/images/pokeball-bg.png");
+	background-repeat: repeat;
+	background-position: 900px;	
+}
+
+.homepage-central {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	justify-content: flex-start;
+	text-align: center;
+	margin: 0 auto;
+	background-color: hsla(52, 84%, 83%);
+}
+
+.homepage-central a {
+	width: fit-content;
+	align-self: center;
+}
+
 .hint-container {
 	margin-bottom: 24px;
 }
@@ -52,8 +75,7 @@ span.show-hint {
 
 .main-img {
 	max-width: 300px;
-	margin: auto; 
-	display: block;
+	margin: 0 auto;
 }
 
 .profile-pic-container {
@@ -83,25 +105,6 @@ span.show-hint {
 	display: flex;
 	flex-wrap: wrap;
 }
-
-.homepage-sections {
-	justify-content: center;
-	height: 100vh;
-	background-image: url("/static/images/pokeball-bg.png");
-	background-repeat: repeat;
-	background-position: 900px;	
-}
-
-.homepage-central {
-	max-width: 1rem;
-	min-width: 1000px;
-	height: 100%;
-	justify-content: center;
-	text-align: center;
-	margin: 0 auto;
-	background-color: hsla(52, 84%, 83%);
-}
-
 .center-div {
 	margin-left: auto;
 	margin-right: auto;
@@ -132,14 +135,12 @@ span.show-hint {
 }
 
 .user-pokemon-container.edit-card {
-	width: 60%;
 	min-width: 420px;
 	justify-content: center;
 	margin: auto;
 	margin-left: 0;
 	margin-right: 0;
 }
-
 
 .local-card-and-search-wrapper {
 	display: flex;
@@ -180,7 +181,7 @@ span.show-hint {
 .show-editable-pokemon {
 	display: flex;
 	justify-content: space-around;
-	width: 35%;
+	width: fit-content;
 	min-width: 300px;
 	height: 520px;
 	overflow-y:auto;
@@ -236,4 +237,46 @@ span.show-hint {
 /* I did this because the DebugToolbar was in the way of the profile tab of the navbar, very annoying */
 #flDebug #flDebugToolbarHandle {
 	top: 60px !important;
+}
+
+#slots-select-container {
+	display: flex; 
+	flex-direction: row; 
+	justify-content: stretch; 
+	margin-bottom: 50px;
+}
+
+@media (min-width: 1025px) {
+	.homepage-central {
+		max-width: 60rem;
+	}
+}
+
+@media (min-width: 480px) and (max-width: 1025)  {
+	.homepage-central {
+		max-width: 30em;
+	}
+	.local-card-and-search-wrapper {
+		flex-direction: column;
+	}
+
+}
+
+@media (max-width: 720px) {
+	#slots-select-container {
+		flex-direction: column;
+	}
+	.show-editable-pokemon {
+		width: fit-content;
+	}
+	.search-result-container {
+		width: 100%;
+	}
+
+}
+
+@media (max-width: 480px) {
+	.dropdown-menu-right {
+		max-width: fit-content;
+	}
 }

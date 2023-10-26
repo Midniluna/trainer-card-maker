@@ -9,7 +9,7 @@
 <br>
 
 <!-- THIS segment shows editable pokemon + all available pokemon -->
-<div style="display: flex; flex-direction: row; justify-content: space-between; margin-bottom: 50px;">
+<div id="slots-select-container">
     <div class="user-pokemon-container edit-card center-div flex-wrap">
         <!-- for slot position in card, if a pokemon exists there, insert data -->
         {% for slot_pos in slotted %} {% if slotted.get(slot_pos) %}

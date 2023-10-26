@@ -263,6 +263,9 @@ span.show-hint {
 }
 
 @media (max-width: 720px) {
+	form p {
+		width: 100%;
+	}
 	#slots-select-container {
 		flex-direction: column;
 	}

@@ -145,7 +145,7 @@ $(".pokemon-search-form").on("submit", async function (evt) {
     evt.preventDefault();
     const $TARGET = $(this).find("#search");
     const $APPENDRESULTS = $(".search-results")
-    const INPUT = $TARGET.val()
+    let INPUT = $TARGET.val()
     $APPENDRESULTS.empty()
 
     if (INPUT == "") {
@@ -153,7 +153,7 @@ $(".pokemon-search-form").on("submit", async function (evt) {
     }
 
     const RESP = await axios.post(`${BASE_URL}/search-pokemon`, {
-        input : INPUT
+        input : INPUT.toLowerCase()
     });
 
     const RESLT_PKMN = RESP.data

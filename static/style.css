@@ -135,7 +135,9 @@ span.show-hint {
 }
 
 .user-pokemon-container.edit-card {
+	/* "width" by itself didn't work... hmm */
 	min-width: 420px;
+	max-width: 420px;
 	justify-content: center;
 	margin: auto;
 	margin-left: 0;
@@ -181,11 +183,11 @@ span.show-hint {
 .show-editable-pokemon {
 	display: flex;
 	justify-content: space-around;
-	width: fit-content;
-	min-width: 300px;
-	height: 520px;
 	overflow-y:auto;
 	background-color: #ebdf95;
+	min-width: 300px;
+	max-width: 1120px;
+	height: 520px;
 	padding: 10px;
 }
 
@@ -196,12 +198,14 @@ span.show-hint {
 	margin-right: 20px;
 	text-align: center;
 	position: relative;
+	flex: 1 0 21%;
 }
 
 .fa-star {
 	position: absolute;
 	right: 0;
 	cursor: pointer;
+	z-index: 2;
 }
 
 .pokemon-image {
@@ -242,7 +246,7 @@ span.show-hint {
 #slots-select-container {
 	display: flex; 
 	flex-direction: row; 
-	justify-content: stretch; 
+	justify-content: space-evenly; 
 	margin-bottom: 50px;
 }
 

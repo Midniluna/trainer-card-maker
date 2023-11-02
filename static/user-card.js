@@ -1,4 +1,4 @@
-const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com/'
+const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com'
 
 function capitalize(str){
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -100,6 +100,7 @@ $(".hint-btn").on("click", function(evt) {
 
 $(".fa-star").on("click", async function (evt) {
 	evt.preventDefault();
+	console.log("clicked")
 
     const PKMN_ID = $(this).attr("data-userpkmn-id")
 	const USER_ID = $(this).attr("data-user-id")

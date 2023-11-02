@@ -373,7 +373,14 @@ def edit_pokemon(user_id, userpkmn_id):
 def fave_pokemon(userpkmn_id):
     """Allow user to customize their pokemon"""
     
+    user_id = int(request.json["user_id"])
+    if not is_user(user_id):
+        return "Failed"
+    
     pokemon = UserPkmn.query.get(userpkmn_id)
+    print(pokemon.id)
+    print(pokemon.nickname)
+    print(pokemon.favorite)
 
     if pokemon.favorite:
         pokemon.favorite = False

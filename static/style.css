@@ -280,6 +280,10 @@ span.show-hint {
 	.search-result-container {
 		width: 100%;
 	}
+	.user-pokemon-container {
+		justify-content: space-around;
+		min-width: 300px;
+	}
 	.user-pokemon-container.edit-card{
 		margin: 0 auto;
 	}
@@ -287,6 +291,15 @@ span.show-hint {
 }
 
 @media (max-width: 575px) {
+	form p {
+		font-size: larger;
+	}
+	form input,
+	form p input {
+		padding: 1rem !important;
+		font-size: larger !important;
+	}
+	
 	.dropdown-menu-right {
 		max-width: fit-content;
 	}
@@ -306,17 +319,19 @@ span.show-hint {
 		position: relative;
 		top: 4rem;
 	}
-
 	.homepage-sections,
 	.homepage-central {
 	height: 93vh
 	}
 
-	form p {
-		font-size: larger;
+	.btn-sm {
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
 	}
-	form p input {
-		padding: 1rem !important;
-		font-size: larger !important;
+	.user-pokemon-container.edit-card {
+		padding-bottom: 2em;
+	}
+	.show-editable-pokemon .pokemon-container {
+		margin-bottom: 2em;
 	}
 }

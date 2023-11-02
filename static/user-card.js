@@ -1,4 +1,4 @@
-const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com/'
+const BASE_URL = 'http://localhost:5000'
 
 function capitalize(str){
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -98,6 +98,15 @@ $(".hint-btn").on("click", function(evt) {
 
 })
 
+$(".fa-star").on("click", async function (evt) {
+	evt.preventDefault();
+
+    const PKMN_ID = $(this).attr("data-userpkmn-id")
+	const USER_ID = $(this).attr("data-user-id")
+    await axios.patch(`${BASE_URL}/${PKMN_ID}/fave`, {user_id : USER_ID})
+    $(this).toggleClass('fa-regular')
+    $(this).toggleClass('fa-solid')
+})
 
 
 // --------------------------------------------------------

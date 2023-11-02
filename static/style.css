@@ -266,7 +266,7 @@ span.show-hint {
 
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
 	form p {
 		width: 100%;
 	}
@@ -278,6 +278,9 @@ span.show-hint {
 	}
 	.search-result-container {
 		width: 100%;
+	}
+	.user-pokemon-container.edit-card{
+		margin: 0 auto;
 	}
 
 }

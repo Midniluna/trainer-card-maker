@@ -1,7 +1,7 @@
 {% for poke in all_boxed %}
 <div class="pokemon-container">
     {% if g.user and g.user.id == user.id %} 
-    <i class="{{'fa-solid' if poke.favorite else 'fa-regular' }} fa-star" data-userpkmn-id="{{poke.id}}"></i>
+    <i class="{{'fa-solid' if poke.favorite else 'fa-regular' }} fa-star" data-user-id="{{user.id}}" data-userpkmn-id="{{poke.id}}"></i>
     {% endif %}
     <img src="{{poke.sprite}}" alt="User Pokemon" class="pokemon-image" />
     <span style="display: block;">

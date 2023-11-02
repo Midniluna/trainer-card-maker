@@ -48,6 +48,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 			$("#species").val() == "";
 			// window.location.replace("http://localhost:5000/home");
 			$(".genned-mon-content").empty();
+			$(".alert").empty();
 			$("#alert-guess-mon")
 				.toggleClass("alert-success")
 				.css("display", "block")

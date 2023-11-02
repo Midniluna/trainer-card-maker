@@ -98,6 +98,15 @@ $(".hint-btn").on("click", function(evt) {
 
 })
 
+$(".fa-star").on("click", async function (evt) {
+	evt.preventDefault();
+
+    const PKMN_ID = $(this).attr("data-userpkmn-id")
+	const USER_ID = $(this).attr("data-user-id")
+    await axios.patch(`${BASE_URL}/${PKMN_ID}/fave`, {user_id : USER_ID})
+    $(this).toggleClass('fa-regular')
+    $(this).toggleClass('fa-solid')
+})
 
 
 // --------------------------------------------------------

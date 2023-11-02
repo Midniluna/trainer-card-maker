@@ -54,12 +54,13 @@
 			</div>
 			{% endif %}
 		</nav>
-		{% for category, message in get_flashed_messages(with_categories=True) %}
-		<div class="alert alert-{{category}}">{{ message }}</div>
-		{% endfor %}
-
+		
 		<!-- BODY -->
-		<main class="main-content">{% block content %}{% endblock %}</main>
+		<main class="main-content">
+			{% for category, message in get_flashed_messages(with_categories=True) %}
+			<div class="alert alert-{{category}}">{{ message }}</div>
+			{% endfor %}
+			{% block content %}{% endblock %}</main>
 
 	</body>
 	

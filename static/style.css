@@ -1,9 +1,11 @@
 form {
-	max-width: 50%;
+	max-width: 75%;
 }
 
 nav {
 	background-color: #3F3025;
+	position: absolute;
+	top: 0;
 }
 
 body {
@@ -31,20 +33,22 @@ h6 {
 }
 
 .homepage-central {
-	display: flex;
-	flex-direction: column;
 	height: 100%;
-	justify-content: flex-start;
+	background-color: hsla(52, 84%, 83%);
 	text-align: center;
 	margin: 0 auto;
-	background-color: hsla(52, 84%, 83%);
 }
+
 
 .homepage-central a {
 	width: fit-content;
 	align-self: center;
 }
 
+.homepage-sections,
+.homepage-central {
+	height: 94vh
+}
 .hint-container {
 	margin-bottom: 24px;
 }
@@ -60,10 +64,6 @@ span.show-hint {
 	font-weight: bold;
 }
 
-/* .main-content {
-	padding: 15px;
-} */
-
 .dropdown-menu-right { 
 	right: 0; 
     left: auto; 
@@ -76,6 +76,7 @@ span.show-hint {
 .main-img {
 	max-width: 300px;
 	margin: 0 auto;
+	margin-top: 1rem;
 }
 
 .profile-pic-container {
@@ -267,8 +268,8 @@ span.show-hint {
 }
 
 @media (max-width: 760px) {
-	form p {
-		width: 100%;
+	form {
+		max-width: 100%;
 	}
 	#slots-select-container {
 		flex-direction: column;
@@ -279,14 +280,58 @@ span.show-hint {
 	.search-result-container {
 		width: 100%;
 	}
+	.user-pokemon-container {
+		justify-content: space-around;
+		min-width: 300px;
+	}
 	.user-pokemon-container.edit-card{
 		margin: 0 auto;
 	}
 
 }
 
-@media (max-width: 480px) {
+@media (max-width: 575px) {
+	form p {
+		font-size: larger;
+	}
+	form input,
+	form p input {
+		padding: 1rem !important;
+		font-size: larger !important;
+	}
+	
 	.dropdown-menu-right {
 		max-width: fit-content;
+	}
+	.navbar {
+		position: absolute;
+		z-index: 1;
+		width: 100%;
+		font-size: 1.8rem;
+	}
+	.dropdown-menu a {
+		font-size: 1.5rem;
+	}
+	.navbar ul li {
+		align-self: center;
+	}
+	.main-content {
+		position: relative;
+		top: 4rem;
+	}
+	.homepage-sections,
+	.homepage-central {
+	height: 93vh
+	}
+
+	.btn-sm {
+		padding: .5rem 1rem;
+		font-size: 1.25rem;
+	}
+	.user-pokemon-container.edit-card {
+		padding-bottom: 2em;
+	}
+	.show-editable-pokemon .pokemon-container {
+		margin-bottom: 2em;
 	}
 }

@@ -1,4 +1,4 @@
-const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com/'
+const BASE_URL = 'https://pokepals-trainercard-maker.onrender.com'
 
 function capitalize(str){
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -48,6 +48,7 @@ $("#guess-pokemon-form").on("submit", async function (evt) {
 			$("#species").val() == "";
 			// window.location.replace("http://localhost:5000/home");
 			$(".genned-mon-content").empty();
+			$(".alert").empty();
 			$("#alert-guess-mon")
 				.toggleClass("alert-success")
 				.css("display", "block")

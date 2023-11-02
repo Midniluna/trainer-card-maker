@@ -25,7 +25,7 @@
         <!-- If user is on card editing page, edit passes as true -->
         {% if edit %}
         <button class="btn btn-sm btn-warning select-mon"  data-userpkmn-id="{{poke.id}}">Choose</button>
-        <!-- Only want to show the edit button on certain pages -->
+        <!-- Only want to show the 'single pokemon edit' button on certain pages -->
         {% elif not hide_edit %}
         <a href="{{url_for('edit_pokemon', user_id = user.id, userpkmn_id = poke.id)}}" class="edit-mon">Edit</a></span>
         {% endif %}

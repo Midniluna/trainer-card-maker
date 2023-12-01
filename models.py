@@ -243,7 +243,7 @@ class User(db.Model):
 
         user = User(
             nickname = nickname,
-            username = username,
+            username = username.lower(),
             email = email,
             password = hashed_pwd
         )

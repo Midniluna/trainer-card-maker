@@ -21,6 +21,7 @@ app.config["TESTING"] = True
 # This is a bit of hack, but don"t use Flask DebugToolbar
 app.config["DEBUG_TB_HOSTS"] = ["dont-show-debug-toolbar"]
 app.config["WTF_CSRF_ENABLED"] = False
+app.config["PRESERVE_CONTEXT_ON_EXCEPTION"] = False
 
 # Now tests go here
 # python3 -m unittest test_user.py
@@ -53,64 +54,117 @@ class UserModelsTestCase(TestCase):
 
         self.client = app.test_client()
 
-    #    Soooo I've learned that I don't actyally need to add a user here. causes a whole lot of issues.
-       
+        # Trying to debate if adding a user here is even a good idea
+        # Much later and still debating it. It doesn't feel like it cut down any of my workload or anything...,
+        
+        self.rawpass = "password"
+        test_user = User.signup(username = "testuser", nickname = "TestUser", email = "testemail@email.com", password = self.rawpass)
+        db.session.commit()
+
+        self.test_user = test_user
 
     def tearDown(self):
         db.session.rollback()
-
+        
+        db.session.delete(self.test_user)
+        db.session.commit()
+        
         
     def test_signup(self):
         with app.test_client() as client:
-            """Test user signup route"""
+            """Test user signup route + make sure their card is created"""
 
-            # First confirm that password encryption works
+            # Confirm that password encryption works + that UI changes accordingly
 
-            # Try signing up a new user
-            # IMPORTANT NOTE: Signup route makes username lowercase to make sure uniqueness check ignores case. if trying to query SQL to find a user, do NOT use username to minimize confusion; use email
-            user = User(username = "UserNumberOne", nickname = "xxUserxx", email = "tha_best1@email.com", password = "abc1234")
-
-            res = client.post("/signup", data = {"username" : user.username, "nickname" : user.nickname, "email" : user.email, "password" : user.password, "confirm" : user.password}, follow_redirects = True)
+            rawpass = "badpass"
+            res = client.post("/signup", data = {"username" : "Hiimnew121", "nickname" : "Newbie", "email" : "newbie121@email.com", "password" : rawpass, "confirm" : rawpass}, follow_redirects = True)
             html = res.get_data(as_text = True)
             self.assertEqual(res.status_code, 200)
             self.assertIn("logout", html)
             self.assertNotIn("login", html)
-
-            check_hashed = User.query.filter_by(email = user.email).first()
-            self.assertNotEqual(user.password, check_hashed.password)
-
-            # # Log the user out
-            # res2 = client.get("/logout")
-            # html2 = res2.get_data(as_text = True)
-            # self.assertIn("logged out", html2)
             
+            user = User.query.filter_by(email = "newbie121@email.com").first()
+            self.assertNotEqual(rawpass, user.password)
 
-    def test_login(self):
+            # Card should be created along with new user
+            card_exists = Card.query.filter_by(user_id = user.id).one()
+            self.assertTrue(card_exists)
+
+
+    def test_login_logout(self):
         with app.test_client() as client:
             """Test user login route"""
-            
-            # Set password variable seperately because signup route will hash it
-            password = "this is a bad password"
-            new_user = User.signup(username = "wubbalubbin", nickname = "wubbzy", email = "wowow_wubbzy@wow.com", password = password)
-            db.session.commit()
 
-            # Try logging in as new_user
-            res = client.post("/login", data = {"username" : new_user.username, "password" : password}, follow_redirects = True)
+            # Try logging in
+            res = client.post("/login", data = {"username" : self.test_user.username, "password" : self.rawpass}, follow_redirects = True)
             html = res.get_data(as_text = True)
             self.assertEqual(res.status_code, 200)
             self.assertIn("Welcome back", html)
+
+            # Log the user out
+            res2 = client.get("/logout", follow_redirects = True)
+            html2 = res2.get_data(as_text = True)
+            self.assertIn("alert-success", html2)
             
+
     def test_username_taken(self):
         with app.test_client() as client:
             """Test signup route for used nicknames"""
 
-            test_user = User.signup(username = "UserRahhh", nickname = "WeirdAl", email = "Yankovich@gmail.com", password = "CheeseSandwhich")
-            db.session.commit()
-
-            res2 = client.post("/signup", data={"username" : test_user.username, "nickname" : "nickname", "email" : "imacopy@email.com", "password" : "password", 'confirm' : "password"}, follow_redirects = True)
+            # Should fail if either username or email matches an already in-use one
+            # Test username first
+            res = client.post("/signup", data={"username" : self.test_user.username, "nickname" : "nickname", "email" : "imacopy@email.com", "password" : "password", 'confirm' : "password"}, follow_redirects = True)
+            html = res.get_data(as_text=True)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn("already taken", html)
+            
+            # Now test email
+            res2 = client.post("/signup", data={"username" : "newcopy", "nickname" : "nickname", "email" : self.test_user.email, "password" : "password", 'confirm' : "password"}, follow_redirects = True)
             html2 = res2.get_data(as_text=True)
             self.assertEqual(res2.status_code, 200)
-            self.assertIn("already taken", html2)  
+            self.assertIn("already taken", html2)
+
+
+    def test_delete_user(self):
+        with app.test_client() as client: 
+            """Test user delete"""
+
+            with client.session_transaction() as sess:
+                # First check that no user is in session currently
+
+                user = True if CURR_USER_KEY in sess else False
+                self.assertFalse(user)
+
+            # Then make sure you cannot delete a user if you are not signed in as that user
+            res = client.post(f"/profile/{self.test_user.id}/delete", follow_redirects = True)
+            html = res.get_data(as_text=True)
+            self.assertEqual(html, "FALSE")
+
+            # Now signup a user and then make a request to the deletion route
+            res2 = client.post("/signup", data={"username" : "deleteme", "nickname" : "deleteddd", "email" : "delete_me@email.com", "password" : "password", 'confirm' : "password"}, follow_redirects = True)
+            self.assertIn('/home', res2.request.path)
+            
+            # User and card exist?
+            new_user = User.query.filter_by(username = "deleteme").one()
+            card = Card.query.filter_by(user_id = new_user.id).one()
+            self.assertIn(card, Card.query.all())
+            
+            res3 = client.post(f"/profile/{new_user.id}/delete", follow_redirects = True)
+            html2 = res3.get_data(as_text=True)
+            self.assertEqual(html2, "TRUE")
+
+            # User and card no longer exist?
+            self.assertIsNone(User.query.get(new_user.id))
+            self.assertNotIn(card, Card.query.all())
+
+
+    # def test_edit_user(self):
+    #     with app.test_client() as client: 
+    #         """Test user edit route"""
+
+            
+
+            
 
 #     def test_edit_user(self):
 #         with app.test_client() as client: 

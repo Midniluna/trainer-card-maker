@@ -56,7 +56,6 @@ class UserModelsTestCase(TestCase):
 
         # Trying to debate if adding a user here is even a good idea
         # Much later and still debating it. It doesn't feel like it cut down any of my workload or anything...,
-        
         self.rawpass = "password"
         test_user = User.signup(username = "testuser", nickname = "TestUser", email = "testemail@email.com", password = self.rawpass)
         db.session.commit()
@@ -158,37 +157,39 @@ class UserModelsTestCase(TestCase):
             self.assertNotIn(card, Card.query.all())
 
 
-    # def test_edit_user(self):
-    #     with app.test_client() as client: 
-    #         """Test user edit route"""
+    def test_view_edit_user(self):
+        with app.test_client() as client: 
+            """Test viewing of user edit route"""
 
+            # First make sure page can't be viewed if user is not logged in
+            # Anonymous user should be redirected to login upon attempt to enter user edit page
+            res = client.get(f"/profile/{self.test_user.id}/edit", follow_redirects = True)
+            self.assertIn("/login", res.request.path)
+
+            # Once we know that fails, do it properly. Login then look at the page.
+            res2 = client.post("/login", data = {"username" : self.test_user.username, "password" : self.rawpass}, follow_redirects = True)
+            self.assertEqual(res2.status_code, 200)
+
+            res3 = client.get(f"/profile/{self.test_user.id}/edit", follow_redirects = True)
+            self.assertEqual(res3.status_code, 200)
+            self.assertIn(f"/profile/{self.test_user.id}/edit", res3.request.path)
+
+
+    def test_edit_user(self):
+        with app.test_client() as client: 
+            """Test post request to user edit route"""
             
-
+            # Login as the test_user
+            res = client.post("/login", data = {"username" : self.test_user.username, "password" : self.rawpass}, follow_redirects = True)
+            self.assertEqual(res.status_code, 200)
             
+            # Edit user
+            new_nickname = "UpdatedTestUser"
+            new_bio = "Hey look I added some information in here! Radical!"
+            
+            res2 = client.post(f"/profile/{self.test_user.id}/edit", data={"img_url" : "", "nickname" : new_nickname, "bio" : new_bio}, follow_redirects = True)
+            self.assertEqual(res2.status_code, 200)
+            self.assertIn(f"/profile/{self.test_user.id}/edit", res2.request.path)
 
-#     def test_edit_user(self):
-#         with app.test_client() as client: 
-#             """Testing user editing route"""
-
-#             # Add user to database and commit so that user has an id and card exists. signup route didn't do this for some reason
-#             db.session.rollback()
-#             user = User(username = "Wubbalubbin", nickname = "Wubbzy", email = "Wowow_wubbzy@wow.com", password = "This is a bad password")
-#             db.session.add(user)
-#             db.session.commit()
-#             card = Card(user_id = user.id) 
-#             db.session.add(card)
-#             db.session.commit()
-
-#             res = client.get(f'profile/{user.id}', follow_redirects = True)
-#             html = res.get_data(as_text=True)
-#             self.assertEqual(res.status_code, 200)
-#             self.assertNotIn('Edit card', html)
-
-#             # User isn't being logged in.... argh. Navbar is still showing "login" and "signup" tabs, and Edit Card button for user profile isn't showing. What am I doing wrong?
-#             client.post("/login", data = {"username" : user.username, "password" : user.password}, follow_redirects = True)
-            # res2 = client.get(f'profile/{user.id}', follow_redirects = True)
-            # html = res2.get_data(as_text=True)
-            # self.assertEqual(res2.status_code, 200)
-
-            # self.assertEqual(session[CURR_USER_KEY], user)
-            # self.assertIn('Edit', html)
+            self.assertEqual(self.test_user.nickname, new_nickname)
+            self.assertEqual(self.test_user.bio, new_bio)
